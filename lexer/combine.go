@@ -75,6 +75,11 @@ func statement(c *combo.LexCombinator) combo.Lexer {
 
 func NewCombinator() *combo.LexCombinator {
 	c := &combo.LexCombinator{}
-	c.ChainOr(comment, whiteSpace(c), statement(c))
+
+	// a comment can either start with whitespace followed by the comment
+	// identifier, or just begin with the comment identifier.
+	com := c.ChainOr(comment, c.ChainAnd(whiteSpace(c), comment))
+
+	c.ChainOr(com, whiteSpace(c), statement(c))
 	return c
 }
