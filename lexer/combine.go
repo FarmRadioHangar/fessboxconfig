@@ -48,16 +48,20 @@ func comment(b *bytes.Reader) (combo.Token, error) {
 		b.UnreadRune()
 		return nil, err
 	}
-	if ch == '#' {
-		r := bufio.NewReader(b)
-		line, err := r.ReadString('\n')
-		if err != nil {
-			return nil, err
+	switch ch {
+	case '#', ';':
+		if ch == '#' {
+			r := bufio.NewReader(b)
+			line, err := r.ReadString('\n')
+			if err != nil {
+				return nil, err
+			}
+			right := left + len(line) + size
+			return combo.NewToken(Comment, string(ch)+line, left, right), nil
 		}
-		right := left + len(line) + size
-		return combo.NewToken(Comment, string(ch)+line, left, right), nil
+
 	}
-	return nil, combo.ErrorMSG("bad token", left, string(ch), "#")
+	return nil, combo.ErrorMSG("bad token", left, string(ch), "# or :")
 }
 
 func nameSpace(c *combo.LexCombinator) combo.Lexer {
