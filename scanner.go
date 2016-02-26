@@ -55,25 +55,13 @@ func (s *Scanner) Scan() (*Token, error) {
 	case ';':
 		return s.scanComment()
 	case ' ', '\t', '\n', '\r':
-		return s.scnWHiteSpace()
+		return s.scanWhitespace()
 	case '=':
-		s.r.ReadRune()
-		tok := &Token{}
-		tok.Type = Operand
-		tok.Text = string(ch)
-		return tok, nil
+		return s.scanRune(Operand)
 	case '[':
-		s.r.ReadRune()
-		tok := &Token{}
-		tok.Type = OpenBrace
-		tok.Text = string(ch)
-		return tok, nil
+		return s.scanRune(OpenBrace)
 	case ']':
-		s.r.ReadRune()
-		tok := &Token{}
-		tok.Type = ClosingBrace
-		tok.Text = string(ch)
-		return tok, nil
+		return s.scanRune(ClosingBrace)
 	case eof:
 		return nil, io.EOF
 	}
@@ -108,7 +96,7 @@ END:
 	tok.Line = s.line
 	return tok, nil
 }
-func (s *Scanner) scnWHiteSpace() (*Token, error) {
+func (s *Scanner) scanWhitespace() (*Token, error) {
 	tok := &Token{}
 	buf := &bytes.Buffer{}
 END:
@@ -151,6 +139,17 @@ func (s *Scanner) scanIdent() (*Token, error) {
 	}
 	tok := &Token{}
 	tok.Type = Ident
+	tok.Text = string(ch)
+	return tok, nil
+}
+
+func (s *Scanner) scanRune(typ TokenType) (*Token, error) {
+	ch, _, err := s.r.ReadRune()
+	if err != nil {
+		return nil, err
+	}
+	tok := &Token{}
+	tok.Type = typ
 	tok.Text = string(ch)
 	return tok, nil
 }
