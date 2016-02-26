@@ -23,7 +23,7 @@ func TestScanner(t *testing.T) {
 			}
 		}
 		if tok != nil {
-			fmt.Println(tok.Text)
+			fmt.Println(tok.Line, ":", tok.Column, " ", tok.Text)
 		}
 	}
 }

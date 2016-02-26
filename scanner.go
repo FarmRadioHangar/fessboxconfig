@@ -17,6 +17,7 @@ const (
 	Comment
 	Section
 	WHiteSpace
+	NewLine
 	Ident
 	Operand
 	OpenBrace
@@ -54,8 +55,10 @@ func (s *Scanner) Scan() (*Token, error) {
 	switch ch {
 	case ';':
 		return s.scanComment()
-	case ' ', '\t', '\n', '\r':
+	case ' ', '\t':
 		return s.scanWhitespace()
+	case '\n', '\r':
+		return s.scanNewline()
 	case '=':
 		return s.scanRune(Operand)
 	case '[':
@@ -101,7 +104,7 @@ func (s *Scanner) scanWhitespace() (*Token, error) {
 	buf := &bytes.Buffer{}
 END:
 	for {
-		ch, size, err := s.r.ReadRune()
+		ch, _, err := s.r.ReadRune()
 		if err != nil {
 			if err.Error() == io.EOF.Error() {
 				break END
@@ -109,13 +112,8 @@ END:
 			return nil, err
 		}
 		switch ch {
-		case '\n', '\r':
-			buf.WriteRune(ch)
-			s.line++
-			s.column = 0
 		case ' ', '\t':
 			buf.WriteRune(ch)
-			s.column = s.column + size
 		default:
 			s.r.UnreadRune()
 			break END
@@ -124,6 +122,21 @@ END:
 	tok.Column = s.column
 	tok.Type = Comment
 	tok.Text = buf.String()
+	tok.Line = s.line
+	return tok, nil
+}
+
+func (s *Scanner) scanNewline() (*Token, error) {
+	ch, _, err := s.r.ReadRune()
+	if err != nil {
+		return nil, err
+	}
+	tok := &Token{}
+	tok.Type = NewLine
+	tok.Text = string(ch)
+	s.column = 0
+	s.line++
+	tok.Column = s.column
 	tok.Line = s.line
 	return tok, nil
 }
@@ -145,6 +158,8 @@ func (s *Scanner) scanRune(typ TokenType) (*Token, error) {
 	tok.Type = typ
 	tok.Text = string(ch)
 	s.column++
+	tok.Column = s.column
+	tok.Line = s.line
 	return tok, nil
 }
 
