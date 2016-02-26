@@ -10,6 +10,8 @@ import (
 
 type TokenType int
 
+var eof = rune(-1)
+
 const (
 	EOF TokenType = iota
 	Comment
@@ -45,17 +47,10 @@ func NewScanner(src io.Reader) *Scanner {
 }
 
 func (s *Scanner) Scan() (*Token, error) {
-	ch, _, err := s.r.ReadRune()
-	if err != nil {
-		return nil, err
-	}
+	ch := s.peek()
 	if isIdent(ch) {
-		tok := &Token{}
-		tok.Type = Ident
-		tok.Text = string(ch)
-		return tok, nil
+		return s.scanIdent()
 	}
-	s.r.UnreadRune()
 	switch ch {
 	case ';':
 		return s.scanComment()
@@ -79,6 +74,8 @@ func (s *Scanner) Scan() (*Token, error) {
 		tok.Type = ClosingBrace
 		tok.Text = string(ch)
 		return tok, nil
+	case eof:
+		return nil, io.EOF
 	}
 	return nil, errors.New("unrecognized token " + string(ch))
 }
@@ -91,6 +88,7 @@ END:
 		ch, size, err := s.r.ReadRune()
 		if err != nil {
 			if err.Error() == io.EOF.Error() {
+
 				break END
 			}
 			return nil, err
@@ -144,4 +142,27 @@ END:
 
 func isIdent(ch rune) bool {
 	return ch == '_' || ch == '-' || ch == '+' || unicode.IsLetter(ch) || unicode.IsDigit(ch)
+}
+
+func (s *Scanner) scanIdent() (*Token, error) {
+	ch, _, err := s.r.ReadRune()
+	if err != nil {
+		return nil, err
+	}
+	tok := &Token{}
+	tok.Type = Ident
+	tok.Text = string(ch)
+	return tok, nil
+}
+
+func (s *Scanner) peek() rune {
+	ch, _, err := s.r.ReadRune()
+	defer s.r.UnreadRune()
+	if err != nil {
+		if err.Error() == io.EOF.Error() {
+			return eof
+		}
+		panic(err)
+	}
+	return ch
 }
