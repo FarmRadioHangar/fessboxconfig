@@ -133,14 +133,7 @@ func isIdent(ch rune) bool {
 }
 
 func (s *Scanner) scanIdent() (*Token, error) {
-	ch, _, err := s.r.ReadRune()
-	if err != nil {
-		return nil, err
-	}
-	tok := &Token{}
-	tok.Type = Ident
-	tok.Text = string(ch)
-	return tok, nil
+	return s.scanRune(Ident)
 }
 
 func (s *Scanner) scanRune(typ TokenType) (*Token, error) {
@@ -151,6 +144,7 @@ func (s *Scanner) scanRune(typ TokenType) (*Token, error) {
 	tok := &Token{}
 	tok.Type = typ
 	tok.Text = string(ch)
+	s.column++
 	return tok, nil
 }
 
