@@ -24,6 +24,7 @@ const (
 	ClosingBrace
 )
 
+// Token is the identifier for a chuck of text.
 type Token struct {
 	Type   TokenType
 	Text   string
@@ -31,6 +32,7 @@ type Token struct {
 	Column int
 }
 
+// Scanner is a lexical scanner for scaning configuration files.
 type Scanner struct {
 	r      *bufio.Reader
 	txt    *bytes.Buffer
