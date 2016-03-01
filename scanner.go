@@ -36,7 +36,6 @@ type Token struct {
 type Scanner struct {
 	r      *bufio.Reader
 	txt    *bytes.Buffer
-	tok    Token // the last token
 	line   int
 	err    error
 	column int
