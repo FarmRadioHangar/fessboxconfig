@@ -47,9 +47,13 @@ func newParser(src io.Reader) (*parser, error) {
 			break
 		}
 		if tok != nil {
-			if tok.Type != Comment || tok.Type != WHiteSpace {
+			switch tok.Type {
+			case WHiteSpace, Comment:
+				continue
+			default:
 				toks = append(toks, tok)
 			}
+
 		}
 	}
 	return &parser{tokens: toks, ast: &ast{}}, nil
@@ -60,12 +64,14 @@ func (p *parser) parse() (*ast, error) {
 	if err != nil {
 		return nil, err
 	}
+	mainSec := &nodeSection{name: "main"}
 END:
 	for {
 		tok := p.next()
 		if tok.Type == EOF {
 			break END
 		}
+		fmt.Println("parsing")
 		switch tok.Type {
 		case OpenBrace:
 			p.rewind()
@@ -73,8 +79,19 @@ END:
 			if err != nil {
 				break END
 			}
+		case Ident:
+			p.rewind()
+			err = p.parseIdent(mainSec)
+			if err != nil {
+				break END
+			}
+
 		}
 	}
+	if err != nil {
+		return nil, err
+	}
+	p.ast.sections = append([]*nodeSection{mainSec}, p.ast.sections...)
 	return p.ast, err
 }
 
@@ -106,6 +123,7 @@ END:
 			p.rewind()
 			break END
 		}
+
 		if !completeName {
 			switch tok.Type {
 			case Ident:
@@ -122,13 +140,11 @@ END:
 			if n1.Type == NewLine {
 				n2 := p.next()
 				if n2.Type == NewLine {
-					fmt.Println("HERE")
 					break END
 				}
 				p.rewind()
 				goto BEGIN
 			}
-			p.rewind()
 			goto BEGIN
 		case Ident:
 			p.rewind()

@@ -8,10 +8,12 @@ import (
 	"unicode"
 )
 
+// TokenType is the type of tokem that will be returned by the Scanner.
 type TokenType int
 
 var eof = rune(-1)
 
+// The following are the token types that are recognized by the scanner
 const (
 	EOF TokenType = iota
 	Comment
@@ -33,6 +35,7 @@ type Token struct {
 }
 
 // Scanner is a lexical scanner for scaning configuration files.
+// This works only on UTF-& text.
 type Scanner struct {
 	r      *bufio.Reader
 	txt    *bytes.Buffer
@@ -41,6 +44,7 @@ type Scanner struct {
 	column int
 }
 
+// NewScanner takes src and returns a new Scanner.
 func NewScanner(src io.Reader) *Scanner {
 	return &Scanner{
 		r:   bufio.NewReader(src),
@@ -48,6 +52,11 @@ func NewScanner(src io.Reader) *Scanner {
 	}
 }
 
+//Scan returns a new token for every call by advancing on the consumend UTF-8
+//encoded input text.
+//
+// Anything after ; is considered a comment. White space is preserved to gether
+// with  new lines. New lines and spaces are intepreted differently.
 func (s *Scanner) Scan() (*Token, error) {
 	ch := s.peek()
 	if isIdent(ch) {
