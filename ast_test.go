@@ -8,7 +8,7 @@ import (
 )
 
 func TestParser(t *testing.T) {
-	src, err := ioutil.ReadFile("fixture/modem.txt")
+	src, err := ioutil.ReadFile("fixture/modem.conf")
 	if err != nil {
 		t.Fatal(err)
 	}
