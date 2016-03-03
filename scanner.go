@@ -119,8 +119,15 @@ END:
 	tok.Line = s.line
 	return tok, nil
 }
+
+//scanWhitespace scans all utf-8 white space characters until it hits a non
+//whitespace character.
+//
+// Tabs ('\t') and space(' ') all represent white space.
 func (s *Scanner) scanWhitespace() (*Token, error) {
 	tok := &Token{}
+
+	// There can be arbitrary spaces so we need to bugger them up.
 	buf := &bytes.Buffer{}
 END:
 	for {
@@ -135,6 +142,9 @@ END:
 		case ' ', '\t':
 			buf.WriteRune(ch)
 		default:
+			// Stop after hitting non whitespace character
+			// Reseting the buffer is necessary so that the scanned character can be
+			// accessed for the next call to Scan method.
 			s.r.UnreadRune()
 			break END
 		}
