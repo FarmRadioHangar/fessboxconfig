@@ -96,7 +96,7 @@ func (s *Scanner) scanComment() (*Token, error) {
 	buf := &bytes.Buffer{}
 END:
 	for {
-		ch, size, err := s.r.ReadRune()
+		ch, _, err := s.r.ReadRune()
 		if err != nil {
 			if err.Error() == io.EOF.Error() {
 
@@ -110,9 +110,9 @@ END:
 			break END
 		default:
 			buf.WriteRune(ch)
-			s.column = s.column + size
 		}
 	}
+	s.column++
 	tok.Column = s.column
 	tok.Type = Comment
 	tok.Text = buf.String()
