@@ -81,6 +81,16 @@ func (s *Scanner) Scan() (*Token, error) {
 	return nil, errors.New("unrecognized token " + string(ch))
 }
 
+//scanComment scans the input for Comments, only single line comments are
+//supported.
+//
+// A comment is all the text that is after a comment identifier, This does not
+// enforce the identifier, so it is up to the caller to decied where the comment
+// starts, this will read all the text up to the end of the line and return it
+// as a single comment token.
+//
+// TODO(gernest) accept thecomment identifier, or check whether the first
+// rune is the supported token identifier.
 func (s *Scanner) scanComment() (*Token, error) {
 	tok := &Token{}
 	buf := &bytes.Buffer{}
