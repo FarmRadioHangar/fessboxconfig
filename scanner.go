@@ -179,6 +179,13 @@ func (s *Scanner) scanNewline() (*Token, error) {
 	return tok, nil
 }
 
+//isIdent returns true if ch is a valid identifier
+// valid identifiers are
+//	underscore _
+//	dash -
+//	plus +
+//	a unicode letter a-zA-Z
+//	a unicode digit 0-9
 func isIdent(ch rune) bool {
 	return ch == '_' || ch == '-' || ch == '+' || unicode.IsLetter(ch) || unicode.IsDigit(ch)
 }
