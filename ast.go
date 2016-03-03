@@ -48,7 +48,7 @@ func newParser(src io.Reader) (*parser, error) {
 		}
 		if tok != nil {
 			switch tok.Type {
-			case WHiteSpace, Comment:
+			case WhiteSpace, Comment:
 				continue
 			default:
 				toks = append(toks, tok)

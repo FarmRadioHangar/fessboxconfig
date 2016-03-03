@@ -18,7 +18,7 @@ const (
 	EOF TokenType = iota
 	Comment
 	Section
-	WHiteSpace
+	WhiteSpace
 	NewLine
 	Ident
 	Operand
@@ -26,7 +26,7 @@ const (
 	ClosingBrace
 )
 
-// Token is the identifier for a chuck of text.
+// Token is the identifier for a check of text.
 type Token struct {
 	Type   TokenType
 	Text   string
@@ -34,7 +34,7 @@ type Token struct {
 	Column int
 }
 
-// Scanner is a lexical scanner for scaning configuration files.
+// Scanner is a lexical scanner for scanning configuration files.
 // This works only on UTF-& text.
 type Scanner struct {
 	r      *bufio.Reader
@@ -52,11 +52,11 @@ func NewScanner(src io.Reader) *Scanner {
 	}
 }
 
-//Scan returns a new token for every call by advancing on the consumend UTF-8
+//Scan returns a new token for every call by advancing on the consumed UTF-8
 //encoded input text.
 //
-// Anything after ; is considered a comment. White space is preserved to gether
-// with  new lines. New lines and spaces are intepreted differently.
+// Anything after ; is considered a comment. White space is preserved together
+// with  new lines. New lines and spaces are interpreted differently.
 func (s *Scanner) Scan() (*Token, error) {
 	ch := s.peek()
 	if isIdent(ch) {
@@ -85,11 +85,11 @@ func (s *Scanner) Scan() (*Token, error) {
 //supported.
 //
 // A comment is all the text that is after a comment identifier, This does not
-// enforce the identifier, so it is up to the caller to decied where the comment
+// enforce the identifier, so it is up to the caller to decide where the comment
 // starts, this will read all the text up to the end of the line and return it
 // as a single comment token.
 //
-// TODO(gernest) accept thecomment identifier, or check whether the first
+// TODO(gernest) accept the comment identifier, or check whether the first
 // rune is the supported token identifier.
 func (s *Scanner) scanComment() (*Token, error) {
 	tok := &Token{}
