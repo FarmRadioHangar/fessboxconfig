@@ -156,6 +156,14 @@ END:
 	return tok, nil
 }
 
+//scanNewline returns a token of type NewLine. It is necessary to separate
+//newlines from normal spaces because many configuration files formats make use
+//of new lines.
+//
+// A new line can either be a carriage return( '\r') or a new line
+// character('\n')
+//
+// TODO(gernest) accept a new line character as input.
 func (s *Scanner) scanNewline() (*Token, error) {
 	ch, _, err := s.r.ReadRune()
 	if err != nil {
