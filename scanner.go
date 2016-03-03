@@ -190,6 +190,9 @@ func isIdent(ch rune) bool {
 	return ch == '_' || ch == '-' || ch == '+' || unicode.IsLetter(ch) || unicode.IsDigit(ch)
 }
 
+//scanIdent returns the current character in the input source as an Ident Token
+//
+// TODO(gernest) Accept the character as input argument.
 func (s *Scanner) scanIdent() (*Token, error) {
 	return s.scanRune(Ident)
 }
