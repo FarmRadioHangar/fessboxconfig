@@ -215,6 +215,11 @@ func (s *Scanner) scanRune(typ TokenType) (*Token, error) {
 	return tok, nil
 }
 
+// peek returns the next rune in the input buffer but does not advance the
+// position of the current buffer.
+//
+// This is a safe way to peek at the next  rune character without actually
+// reading it.
 func (s *Scanner) peek() rune {
 	ch, _, err := s.r.ReadRune()
 	defer s.r.UnreadRune()
