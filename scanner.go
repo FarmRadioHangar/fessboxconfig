@@ -197,6 +197,10 @@ func (s *Scanner) scanIdent() (*Token, error) {
 	return s.scanRune(Ident)
 }
 
+// scanRune scans the current rune and returns a token of type typ, whose Text
+// is the scanned character
+//
+// Use this for single character tokens
 func (s *Scanner) scanRune(typ TokenType) (*Token, error) {
 	ch, _, err := s.r.ReadRune()
 	if err != nil {
