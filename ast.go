@@ -23,6 +23,7 @@ func (a *ast) Section(name string) (*nodeSection, error) {
 	return nil, errors.New("section not found")
 }
 
+//ToJSON marhalls *ast to a json string and writes the result to dst
 func (a *ast) ToJSON(dst io.Writer) error {
 	o := make(map[string]interface{})
 	for _, v := range a.sections {
