@@ -31,6 +31,17 @@ type nodeSection struct {
 	values []*nodeIdent
 }
 
+//Get access the key definition and returns its value or an error if the key is
+//not part of the section.
+func (n *nodeSection) Get(key string) (string, error) {
+	for _, v := range n.values {
+		if v.key == key {
+			return v.value, nil
+		}
+	}
+	return "", errors.New("key not found")
+}
+
 //nodeIdent represents a configuration definition, which can be the key value
 //definition.
 type nodeIdent struct {
