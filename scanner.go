@@ -106,10 +106,10 @@ END:
 		}
 		switch ch {
 		case '\n', '\r':
-			s.r.UnreadRune()
+			_ = s.r.UnreadRune()
 			break END
 		default:
-			buf.WriteRune(ch)
+			_, _ = buf.WriteRune(ch)
 		}
 	}
 	s.column++
@@ -140,12 +140,12 @@ END:
 		}
 		switch ch {
 		case ' ', '\t':
-			buf.WriteRune(ch)
+			_, _ = buf.WriteRune(ch)
 		default:
 			// Stop after hitting non whitespace character
 			// Reseting the buffer is necessary so that the scanned character can be
 			// accessed for the next call to Scan method.
-			s.r.UnreadRune()
+			_ = s.r.UnreadRune()
 			break END
 		}
 	}
@@ -222,12 +222,12 @@ func (s *Scanner) scanRune(typ TokenType) (*Token, error) {
 // reading it.
 func (s *Scanner) peek() rune {
 	ch, _, err := s.r.ReadRune()
-	defer s.r.UnreadRune()
 	if err != nil {
 		if err.Error() == io.EOF.Error() {
 			return eof
 		}
 		panic(err)
 	}
+	_ = s.r.UnreadRune()
 	return ch
 }
