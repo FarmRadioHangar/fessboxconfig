@@ -12,12 +12,16 @@ type ast struct {
 	sections []*nodeSection
 }
 
+//nodeSection represent a section in the configuration object. Sections are name
+//spaces that contains configurations definitions under them.
 type nodeSection struct {
 	name   string
 	line   int
 	values []*nodeIdent
 }
 
+//nodeIdent represents a configuration definition, which can be the key value
+//definition.
 type nodeIdent struct {
 	key   string
 	value string
