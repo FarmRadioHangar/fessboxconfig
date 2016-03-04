@@ -2,7 +2,6 @@ package config
 
 import (
 	"bytes"
-	"fmt"
 	"io/ioutil"
 	"testing"
 )
@@ -20,10 +19,24 @@ func TestParser(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	for _, v := range ass.sections {
-		fmt.Println(v.name)
-		for _, i := range v.values {
-			fmt.Printf(">> %s  %s\n", i.key, i.value)
+	mainSample := []struct {
+		key, value string
+	}{
+		{"interval", "15"},
+		{"group", "0"},
+		{"language", "en"},
+	}
+	main, err := ass.Section("main")
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, v := range mainSample {
+		value, err := main.Get(v.key)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if value != v.value {
+			t.Errorf("expected %s got %s", v.value, value)
 		}
 	}
 
