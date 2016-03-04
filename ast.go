@@ -14,7 +14,7 @@ type ast struct {
 
 //Section returns the section named name or an error if the section is not found
 //in the ast
-func (a *ast) Section(name string) (*nodeSection, e, error) {
+func (a *ast) Section(name string) (*nodeSection, error) {
 	for _, v := range a.sections {
 		if v.name == name {
 			return v, nil
