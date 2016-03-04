@@ -2,6 +2,7 @@ package config
 
 import (
 	"bytes"
+	"fmt"
 	"io/ioutil"
 	"testing"
 )
@@ -40,4 +41,11 @@ func TestParser(t *testing.T) {
 		}
 	}
 
+	// test the encoding to json
+	dst := &bytes.Buffer{}
+	err = ass.ToJSON(dst)
+	if err != nil {
+		t.Error(err)
+	}
+	fmt.Println(dst)
 }

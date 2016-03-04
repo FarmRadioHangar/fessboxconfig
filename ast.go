@@ -1,8 +1,8 @@
 package config
 
 import (
+	"encoding/json"
 	"errors"
-	"fmt"
 	"io"
 )
 
@@ -21,6 +21,18 @@ func (a *ast) Section(name string) (*nodeSection, error) {
 		}
 	}
 	return nil, errors.New("section not found")
+}
+
+func (a *ast) ToJSON(dst io.Writer) error {
+	o := make(map[string]interface{})
+	for _, v := range a.sections {
+		sec := make(map[string]interface{})
+		for _, value := range v.values {
+			sec[value.key] = value.value
+		}
+		o[v.name] = sec
+	}
+	return json.NewEncoder(dst).Encode(o)
 }
 
 //nodeSection represent a section in the configuration object. Sections are name
@@ -98,7 +110,6 @@ END:
 		if tok.Type == EOF {
 			break END
 		}
-		fmt.Println("parsing")
 		switch tok.Type {
 		case OpenBrace:
 			p.rewind()
@@ -194,7 +205,6 @@ func (p *parser) rewind() {
 }
 
 func (p *parser) parseIdent(sec *nodeSection) (err error) {
-	fmt.Printf("parsing ident for %s -- ", sec.name)
 	n := &nodeIdent{}
 	doneKey := false
 END:
@@ -234,7 +244,6 @@ END:
 	if err == nil {
 		sec.values = append(sec.values, n)
 	}
-	fmt.Println("done")
 
 	return
 }
