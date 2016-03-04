@@ -73,6 +73,8 @@ type parser struct {
 	currPos int
 }
 
+//newParser returns a new parser that parses input from src. The returned parser
+//supports gsm modem configuration format only.
 func newParser(src io.Reader) (*parser, error) {
 	s := NewScanner(src)
 	var toks []*Token
@@ -84,11 +86,16 @@ func newParser(src io.Reader) (*parser, error) {
 			if err.Error() != io.EOF.Error() {
 				return nil, err
 			}
+
+			// we are at the end of the input
 			break
 		}
 		if tok != nil {
 			switch tok.Type {
 			case WhiteSpace, Comment:
+
+				// Skip comments and whitespaces but preserve the newlines to aid in
+				// parsing
 				continue
 			default:
 				toks = append(toks, tok)
