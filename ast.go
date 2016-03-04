@@ -28,6 +28,10 @@ type nodeIdent struct {
 	line  int
 }
 
+// parser is a parser for configuration files. It supports utf-8 encoded
+// configuration files.
+//
+// Only modem configuration files are supported for the momment.
 type parser struct {
 	tokens  []*Token
 	ast     *ast
