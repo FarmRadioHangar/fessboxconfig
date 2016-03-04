@@ -9,7 +9,6 @@ import (
 // ast is an abstract syntax tree for a configuration object. The configuration
 // format should be section based( or you can say namespacing).
 type ast struct {
-	*node
 	sections []*nodeSection
 }
 
