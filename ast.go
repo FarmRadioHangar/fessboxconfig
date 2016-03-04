@@ -12,6 +12,17 @@ type ast struct {
 	sections []*nodeSection
 }
 
+//Section returns the section named name or an error if the section is not found
+//in the ast
+func (a *ast) Section(name string) (*nodeSection, e, error) {
+	for _, v := range a.sections {
+		if v.name == name {
+			return v, nil
+		}
+	}
+	return nil, errors.New("section not found")
+}
+
 //nodeSection represent a section in the configuration object. Sections are name
 //spaces that contains configurations definitions under them.
 type nodeSection struct {
