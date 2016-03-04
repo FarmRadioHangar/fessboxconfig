@@ -12,10 +12,6 @@ type ast struct {
 	sections []*nodeSection
 }
 
-type node struct {
-	values []*nodeIdent
-}
-
 type nodeSection struct {
 	name   string
 	line   int
