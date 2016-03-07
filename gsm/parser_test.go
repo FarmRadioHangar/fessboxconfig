@@ -12,7 +12,7 @@ func TestParser(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	p, err := newParser(bytes.NewReader(src))
+	p, err := NewParser(bytes.NewReader(src))
 	if err != nil {
 		t.Fatal(err)
 	}

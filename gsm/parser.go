@@ -74,9 +74,9 @@ type Parser struct {
 	currPos int
 }
 
-//newParser returns a new Parser that parses input from src. The returned Parser
+//NewParser returns a new Parser that parses input from src. The returned Parser
 //supports gsm modem configuration format only.
-func newParser(src io.Reader) (*Parser, error) {
+func NewParser(src io.Reader) (*Parser, error) {
 	s := config.NewScanner(src)
 	var toks []*config.Token
 	var err error
