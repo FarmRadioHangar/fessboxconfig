@@ -64,19 +64,19 @@ type nodeIdent struct {
 	line  int
 }
 
-// parser is a parser for configuration files. It supports utf-8 encoded
+// Parser is a Parser for configuration files. It supports utf-8 encoded
 // configuration files.
 //
 // Only modem configuration files are supported for the momment.
-type parser struct {
+type Parser struct {
 	tokens  []*config.Token
 	Ast     *Ast
 	currPos int
 }
 
-//newParser returns a new parser that parses input from src. The returned parser
+//newParser returns a new Parser that parses input from src. The returned Parser
 //supports gsm modem configuration format only.
-func newParser(src io.Reader) (*parser, error) {
+func newParser(src io.Reader) (*Parser, error) {
 	s := config.NewScanner(src)
 	var toks []*config.Token
 	var err error
@@ -104,10 +104,10 @@ func newParser(src io.Reader) (*parser, error) {
 
 		}
 	}
-	return &parser{tokens: toks, Ast: &Ast{}}, nil
+	return &Parser{tokens: toks, Ast: &Ast{}}, nil
 }
 
-func (p *parser) parse() (*Ast, error) {
+func (p *Parser) parse() (*Ast, error) {
 	var err error
 	if err != nil {
 		return nil, err
@@ -142,7 +142,7 @@ END:
 	return p.Ast, err
 }
 
-func (p *parser) next() *config.Token {
+func (p *Parser) next() *config.Token {
 	if p.currPos >= len(p.tokens)-1 {
 		return &config.Token{Type: config.EOF}
 	}
@@ -151,11 +151,11 @@ func (p *parser) next() *config.Token {
 	return t
 }
 
-func (p *parser) seek(at int) {
+func (p *Parser) seek(at int) {
 	p.currPos = at
 }
 
-func (p *parser) parseSection() (err error) {
+func (p *Parser) parseSection() (err error) {
 	left := p.next()
 	if left.Type != config.OpenBrace {
 		return errors.New("bad token")
@@ -209,11 +209,11 @@ END:
 	return
 }
 
-func (p *parser) rewind() {
+func (p *Parser) rewind() {
 	p.currPos--
 }
 
-func (p *parser) parseIdent(sec *NodeSection) (err error) {
+func (p *Parser) parseIdent(sec *NodeSection) (err error) {
 	n := &nodeIdent{}
 	doneKey := false
 END:
