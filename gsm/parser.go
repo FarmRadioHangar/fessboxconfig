@@ -63,6 +63,24 @@ func (a *Ast) LoadJSON(src []byte) error {
 	return nil
 }
 
+func PrintAst(dst io.Writer, src *Ast) {
+	for _, v := range src.sections {
+		if v.name == "main" {
+			for _, sub := range v.values {
+				fmt.Fprintf(dst, "%s=%s \n", sub.key, sub.value)
+			}
+			fmt.Fprint(dst, "\n\n")
+			continue
+		}
+		fmt.Fprintf(dst, " [ %s ] \n", v.name)
+		for _, sub := range v.values {
+			fmt.Fprintf(dst, "%s=%s \n", sub.key, sub.value)
+		}
+		fmt.Fprint(dst, "\n\n")
+		continue
+	}
+}
+
 //NodeSection represent a section in the configuration object. Sections are name
 //spaces that contains configurations definitions under them.
 type NodeSection struct {

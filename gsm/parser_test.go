@@ -3,6 +3,7 @@ package gsm
 import (
 	"bytes"
 	"io/ioutil"
+	"os"
 	"testing"
 )
 
@@ -65,4 +66,5 @@ func TestParser(t *testing.T) {
 			t.Errorf("expected %s got %s", v.value, value)
 		}
 	}
+	PrintAst(os.Stdout, nAst)
 }
