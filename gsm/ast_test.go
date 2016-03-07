@@ -1,4 +1,4 @@
-package config
+package gsm
 
 import (
 	"bytes"
@@ -8,7 +8,7 @@ import (
 )
 
 func TestParser(t *testing.T) {
-	src, err := ioutil.ReadFile("fixture/modem.conf")
+	src, err := ioutil.ReadFile("modem.conf")
 	if err != nil {
 		t.Fatal(err)
 	}

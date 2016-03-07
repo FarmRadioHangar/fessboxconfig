@@ -1,8 +1,9 @@
-package config
+package gsm
 
 import (
 	"encoding/json"
 	"errors"
+	"github.com/FarmRadioHangar/fessboxconfig"
 	"io"
 )
 
@@ -68,7 +69,7 @@ type nodeIdent struct {
 //
 // Only modem configuration files are supported for the momment.
 type parser struct {
-	tokens  []*Token
+	tokens  []*config.Token
 	ast     *ast
 	currPos int
 }
@@ -76,10 +77,10 @@ type parser struct {
 //newParser returns a new parser that parses input from src. The returned parser
 //supports gsm modem configuration format only.
 func newParser(src io.Reader) (*parser, error) {
-	s := NewScanner(src)
-	var toks []*Token
+	s := config.NewScanner(src)
+	var toks []*config.Token
 	var err error
-	var tok *Token
+	var tok *config.Token
 	for err == nil {
 		tok, err = s.Scan()
 		if err != nil {
@@ -92,7 +93,7 @@ func newParser(src io.Reader) (*parser, error) {
 		}
 		if tok != nil {
 			switch tok.Type {
-			case WhiteSpace, Comment:
+			case config.WhiteSpace, config.Comment:
 
 				// Skip comments and whitespaces but preserve the newlines to aid in
 				// parsing
@@ -115,17 +116,17 @@ func (p *parser) parse() (*ast, error) {
 END:
 	for {
 		tok := p.next()
-		if tok.Type == EOF {
+		if tok.Type == config.EOF {
 			break END
 		}
 		switch tok.Type {
-		case OpenBrace:
+		case config.OpenBrace:
 			p.rewind()
 			err = p.parseSection()
 			if err != nil {
 				break END
 			}
-		case Ident:
+		case config.Ident:
 			p.rewind()
 			err = p.parseIdent(mainSec)
 			if err != nil {
@@ -141,9 +142,9 @@ END:
 	return p.ast, err
 }
 
-func (p *parser) next() *Token {
+func (p *parser) next() *config.Token {
 	if p.currPos >= len(p.tokens)-1 {
-		return &Token{Type: EOF}
+		return &config.Token{Type: config.EOF}
 	}
 	t := p.tokens[p.currPos]
 	p.currPos++
@@ -156,7 +157,7 @@ func (p *parser) seek(at int) {
 
 func (p *parser) parseSection() (err error) {
 	left := p.next()
-	if left.Type != OpenBrace {
+	if left.Type != config.OpenBrace {
 		return errors.New("bad token")
 	}
 	ns := &nodeSection{}
@@ -165,34 +166,34 @@ END:
 	for {
 	BEGIN:
 		tok := p.next()
-		if tok.Type == EOF {
+		if tok.Type == config.EOF {
 			p.rewind()
 			break END
 		}
 
 		if !completeName {
 			switch tok.Type {
-			case Ident:
+			case config.Ident:
 				ns.name = ns.name + tok.Text
 				goto BEGIN
-			case ClosingBrace:
+			case config.ClosingBrace:
 				completeName = true
 				goto BEGIN
 			}
 		}
 		switch tok.Type {
-		case NewLine:
+		case config.NewLine:
 			n1 := p.next()
-			if n1.Type == NewLine {
+			if n1.Type == config.NewLine {
 				n2 := p.next()
-				if n2.Type == NewLine {
+				if n2.Type == config.NewLine {
 					break END
 				}
 				p.rewind()
 				goto BEGIN
 			}
 			goto BEGIN
-		case Ident:
+		case config.Ident:
 			p.rewind()
 			err = p.parseIdent(ns)
 			if err != nil {
@@ -219,17 +220,17 @@ END:
 	for {
 	BEGIN:
 		tok := p.next()
-		if tok.Type == EOF {
+		if tok.Type == config.EOF {
 			p.rewind()
 			break END
 		}
 
 		if !doneKey {
 			switch tok.Type {
-			case Ident:
+			case config.Ident:
 				n.key = n.key + tok.Text
 				goto BEGIN
-			case Operand:
+			case config.Operand:
 				doneKey = true
 				goto BEGIN
 			default:
@@ -239,10 +240,10 @@ END:
 
 		}
 		switch tok.Type {
-		case Ident:
+		case config.Ident:
 			n.value = n.value + tok.Text
 			goto BEGIN
-		case NewLine:
+		case config.NewLine:
 			break END
 		default:
 			err = errors.New("some fish")
