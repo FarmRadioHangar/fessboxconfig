@@ -133,6 +133,7 @@ func NewParser(src io.Reader) (*Parser, error) {
 	return &Parser{tokens: toks, Ast: &Ast{}}, nil
 }
 
+// Parse parses the scanned input and return its *Ast or arror if any.
 func (p *Parser) Parse() (*Ast, error) {
 	var err error
 	if err != nil {
