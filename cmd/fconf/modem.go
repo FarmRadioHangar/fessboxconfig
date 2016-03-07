@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"io"
 	"os"
+	"path/filepath"
 
 	"github.com/FarmRadioHangar/fessboxconfig/gsm"
 )
