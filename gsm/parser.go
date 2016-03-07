@@ -10,12 +10,12 @@ import (
 // Ast is an abstract syntax tree for a configuration object. The configuration
 // format should be section based( or you can say namespacing).
 type Ast struct {
-	sections []*nodeSection
+	sections []*NodeSection
 }
 
 //Section returns the section named name or an error if the section is not found
 //in the Ast
-func (a *Ast) Section(name string) (*nodeSection, error) {
+func (a *Ast) Section(name string) (*NodeSection, error) {
 	for _, v := range a.sections {
 		if v.name == name {
 			return v, nil
@@ -37,9 +37,9 @@ func (a *Ast) ToJSON(dst io.Writer) error {
 	return json.NewEncoder(dst).Encode(o)
 }
 
-//nodeSection represent a section in the configuration object. Sections are name
+//NodeSection represent a section in the configuration object. Sections are name
 //spaces that contains configurations definitions under them.
-type nodeSection struct {
+type NodeSection struct {
 	name   string
 	line   int
 	values []*nodeIdent
@@ -47,7 +47,7 @@ type nodeSection struct {
 
 //Get access the key definition and returns its value or an error if the key is
 //not part of the section.
-func (n *nodeSection) Get(key string) (string, error) {
+func (n *NodeSection) Get(key string) (string, error) {
 	for _, v := range n.values {
 		if v.key == key {
 			return v.value, nil
@@ -112,7 +112,7 @@ func (p *parser) parse() (*Ast, error) {
 	if err != nil {
 		return nil, err
 	}
-	mainSec := &nodeSection{name: "main"}
+	mainSec := &NodeSection{name: "main"}
 END:
 	for {
 		tok := p.next()
@@ -138,7 +138,7 @@ END:
 	if err != nil {
 		return nil, err
 	}
-	p.Ast.sections = append([]*nodeSection{mainSec}, p.Ast.sections...)
+	p.Ast.sections = append([]*NodeSection{mainSec}, p.Ast.sections...)
 	return p.Ast, err
 }
 
@@ -160,7 +160,7 @@ func (p *parser) parseSection() (err error) {
 	if left.Type != config.OpenBrace {
 		return errors.New("bad token")
 	}
-	ns := &nodeSection{}
+	ns := &NodeSection{}
 	completeName := false
 END:
 	for {
@@ -213,7 +213,7 @@ func (p *parser) rewind() {
 	p.currPos--
 }
 
-func (p *parser) parseIdent(sec *nodeSection) (err error) {
+func (p *parser) parseIdent(sec *NodeSection) (err error) {
 	n := &nodeIdent{}
 	doneKey := false
 END:
