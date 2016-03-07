@@ -16,7 +16,7 @@ func TestParser(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	ass, err := p.parse()
+	ass, err := p.Parse()
 	if err != nil {
 		t.Fatal(err)
 	}

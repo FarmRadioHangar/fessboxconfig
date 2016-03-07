@@ -107,7 +107,7 @@ func NewParser(src io.Reader) (*Parser, error) {
 	return &Parser{tokens: toks, Ast: &Ast{}}, nil
 }
 
-func (p *Parser) parse() (*Ast, error) {
+func (p *Parser) Parse() (*Ast, error) {
 	var err error
 	if err != nil {
 		return nil, err
