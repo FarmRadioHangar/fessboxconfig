@@ -3,8 +3,10 @@ package gsm
 import (
 	"encoding/json"
 	"errors"
-	"github.com/FarmRadioHangar/fessboxconfig"
+	"fmt"
 	"io"
+
+	"github.com/FarmRadioHangar/fessboxconfig"
 )
 
 // Ast is an abstract syntax tree for a configuration object. The configuration
@@ -35,6 +37,30 @@ func (a *Ast) ToJSON(dst io.Writer) error {
 		o[v.name] = sec
 	}
 	return json.NewEncoder(dst).Encode(o)
+}
+
+//LoadJSON loads AST from json src
+func (a *Ast) LoadJSON(src []byte) error {
+	var obj map[string]interface{}
+	err := json.Unmarshal(src, &obj)
+	if err != nil {
+		return err
+	}
+	for key, value := range obj {
+		ns := &NodeSection{name: key}
+		switch value.(type) {
+		case map[string]interface{}:
+			sec := value.(map[string]interface{})
+			for k, v := range sec {
+				ident := &nodeIdent{}
+				ident.key = k
+				ident.value = fmt.Sprint(v)
+				ns.values = append(ns.values, ident)
+			}
+		}
+		a.sections = append(a.sections, ns)
+	}
+	return nil
 }
 
 //NodeSection represent a section in the configuration object. Sections are name

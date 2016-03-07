@@ -2,7 +2,6 @@ package gsm
 
 import (
 	"bytes"
-	"fmt"
 	"io/ioutil"
 	"testing"
 )
@@ -47,5 +46,23 @@ func TestParser(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	fmt.Println(dst)
+	nAst := &Ast{}
+	err = nAst.LoadJSON(dst.Bytes())
+	if err != nil {
+		t.Error(err)
+	}
+
+	main, err = nAst.Section("main")
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, v := range mainSample {
+		value, err := main.Get(v.key)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if value != v.value {
+			t.Errorf("expected %s got %s", v.value, value)
+		}
+	}
 }
