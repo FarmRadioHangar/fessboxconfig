@@ -7,15 +7,15 @@ import (
 	"io"
 )
 
-// ast is an abstract syntax tree for a configuration object. The configuration
+// Ast is an abstract syntax tree for a configuration object. The configuration
 // format should be section based( or you can say namespacing).
-type ast struct {
+type Ast struct {
 	sections []*nodeSection
 }
 
 //Section returns the section named name or an error if the section is not found
-//in the ast
-func (a *ast) Section(name string) (*nodeSection, error) {
+//in the Ast
+func (a *Ast) Section(name string) (*nodeSection, error) {
 	for _, v := range a.sections {
 		if v.name == name {
 			return v, nil
@@ -24,8 +24,8 @@ func (a *ast) Section(name string) (*nodeSection, error) {
 	return nil, errors.New("section not found")
 }
 
-//ToJSON marhalls *ast to a json string and writes the result to dst
-func (a *ast) ToJSON(dst io.Writer) error {
+//ToJSON marhalls *Ast to a json string and writes the result to dst
+func (a *Ast) ToJSON(dst io.Writer) error {
 	o := make(map[string]interface{})
 	for _, v := range a.sections {
 		sec := make(map[string]interface{})
@@ -70,7 +70,7 @@ type nodeIdent struct {
 // Only modem configuration files are supported for the momment.
 type parser struct {
 	tokens  []*config.Token
-	ast     *ast
+	Ast     *Ast
 	currPos int
 }
 
@@ -104,10 +104,10 @@ func newParser(src io.Reader) (*parser, error) {
 
 		}
 	}
-	return &parser{tokens: toks, ast: &ast{}}, nil
+	return &parser{tokens: toks, Ast: &Ast{}}, nil
 }
 
-func (p *parser) parse() (*ast, error) {
+func (p *parser) parse() (*Ast, error) {
 	var err error
 	if err != nil {
 		return nil, err
@@ -138,8 +138,8 @@ END:
 	if err != nil {
 		return nil, err
 	}
-	p.ast.sections = append([]*nodeSection{mainSec}, p.ast.sections...)
-	return p.ast, err
+	p.Ast.sections = append([]*nodeSection{mainSec}, p.Ast.sections...)
+	return p.Ast, err
 }
 
 func (p *parser) next() *config.Token {
@@ -204,7 +204,7 @@ END:
 		}
 	}
 	if err == nil {
-		p.ast.sections = append(p.ast.sections, ns)
+		p.Ast.sections = append(p.Ast.sections, ns)
 	}
 	return
 }
