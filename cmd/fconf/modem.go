@@ -18,6 +18,15 @@ type modemConfig struct {
 	cache      []byte
 }
 
+func newModemConfig() DeviceConfig {
+	return &modemConfig{
+		name:       "dongle",
+		backupName: "bak.dongle",
+		dir:        "/etc/asterisk",
+		fileName:   "dongle.conf",
+	}
+}
+
 func (m *modemConfig) Name() string {
 	return m.name
 }
