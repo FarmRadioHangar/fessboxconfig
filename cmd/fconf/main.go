@@ -4,20 +4,12 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
 
 	"github.com/gernest/hot"
 )
-
-type DeviceConfig interface {
-	Name() string
-	LoadJSON(io.Reader) error
-	Save() error
-	ToJSON(io.Writer) error
-}
 
 type Config struct {
 	Port           int64  `json:"port"`
