@@ -4,11 +4,12 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"html/template"
 	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
+
+	"github.com/gernest/hot"
 )
 
 type DeviceConfig interface {
@@ -59,26 +60,29 @@ func main() {
 }
 
 type web struct {
-	cfg     *Config
-	homeTpl *template.Template
+	cfg *Config
+	tpl *hot.Template
 }
 
 func newWeb(cfg *Config) *web {
 	w := &web{cfg: cfg}
-	b, err := ioutil.ReadFile(cfg.IndexFile)
-	if err != nil {
-		log.Fatal(err)
+	config := &hot.Config{
+		Watch:          true,
+		BaseName:       "fconf",
+		Dir:            cfg.TemplatesDir,
+		FilesExtension: []string{".tpl", ".html", ".tmpl"},
 	}
-	tpl, err := template.New("index").Parse(string(b))
+
+	tpl, err := hot.New(config)
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
-	w.homeTpl = tpl
+	w.tpl = tpl
 	return w
 }
 
 func (ww *web) Home(w http.ResponseWriter, r *http.Request) {
-	err := ww.homeTpl.ExecuteTemplate(w, "index", nil)
+	err := ww.tpl.Execute(w, "index.html", nil)
 	if err != nil {
 		log.Println(err)
 	}
