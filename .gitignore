@@ -3,6 +3,8 @@
 *.a
 *.so
 
+fconf
+
 # Folders
 _obj
 _test
