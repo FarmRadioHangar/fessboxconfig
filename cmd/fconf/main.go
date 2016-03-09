@@ -22,7 +22,7 @@ type Config struct {
 	Port           int64  `json:"port"`
 	Host           string `json:"host"`
 	StaticDir      string `json:"static_dir"`
-	IndexFile      string `json:"index_file"`
+	TemplatesDir   string `json:"templates_dir"`
 	AsteriskConfig string `json:"asterisk_config_dir"`
 }
 
@@ -31,7 +31,7 @@ func defaultConfig() *Config {
 		Port:           8080,
 		Host:           "",
 		StaticDir:      "static",
-		IndexFile:      "index.html",
+		TemplatesDir:   "templates",
 		AsteriskConfig: "/etc/asterisk",
 	}
 }

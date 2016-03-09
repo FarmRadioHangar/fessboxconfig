@@ -2,6 +2,6 @@
 	"port": 8080,
 	"host": "",
 	"static_dir": "static",
-	"index_file": "index.html",
+	"templates_dir": "templates",
 	"asterisk_config_dir": "/etc/asterisk"
 }
