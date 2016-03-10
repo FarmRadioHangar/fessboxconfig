@@ -41,14 +41,21 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	s := newServer(cfg)
+	log.Printf(" starting server on  localhost:%d\n", cfg.Port)
+	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", cfg.Port), s))
+}
+
+//newServer returns a http.Handler with all the routes for configuring supported
+//devices registered.
+func newServer(c *Config) http.Handler {
 	s := http.NewServeMux()
-	w := newWeb(cfg)
+	w := newWeb(c)
 	s.HandleFunc("/", w.Home)
 	s.HandleFunc("/device/dongle", w.Dongle)
 	s.Handle("/static/",
-		http.StripPrefix("/static/", http.FileServer(http.Dir(cfg.StaticDir))))
-	log.Printf(" starting server on  localhost:%d\n", cfg.Port)
-	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", cfg.Port), s))
+		http.StripPrefix("/static/", http.FileServer(http.Dir(c.StaticDir))))
+	return s
 }
 
 type web struct {
