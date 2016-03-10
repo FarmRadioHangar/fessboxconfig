@@ -92,7 +92,7 @@ func (ww *web) Home(w http.ResponseWriter, r *http.Request) {
 }
 
 type errMSG struct {
-	Message string `json; "error"`
+	Message string `json:"error"`
 }
 
 func (ww *web) Dongle(w http.ResponseWriter, r *http.Request) {
