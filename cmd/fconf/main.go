@@ -7,8 +7,12 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
+	"path/filepath"
 
+	"github.com/FarmRadioHangar/fessboxconfig/gsm"
 	"github.com/gernest/hot"
+	"github.com/gorilla/mux"
 )
 
 type Config struct {
@@ -49,12 +53,12 @@ func main() {
 //newServer returns a http.Handler with all the routes for configuring supported
 //devices registered.
 func newServer(c *Config) http.Handler {
-	s := http.NewServeMux()
+	s := mux.NewRouter()
 	w := newWeb(c)
-	s.HandleFunc("/", w.Home)
 	s.HandleFunc("/device/dongle", w.Dongle)
-	s.Handle("/static/",
-		http.StripPrefix("/static/", http.FileServer(http.Dir(c.StaticDir))))
+	s.PathPrefix("/static/").
+		Handler(http.StripPrefix("/static/", http.FileServer(http.Dir(c.StaticDir))))
+	s.HandleFunc("/", w.Home)
 	return s
 }
 
@@ -87,5 +91,35 @@ func (ww *web) Home(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+type errMSG struct {
+	Message string `json; "error"`
+}
+
 func (ww *web) Dongle(w http.ResponseWriter, r *http.Request) {
+	fName := filepath.Join(ww.cfg.AsteriskConfig, "dongle.conf")
+	enc := json.NewEncoder(w)
+
+	f, err := os.Open(fName)
+	if err != nil {
+		log.Println(err)
+		enc.Encode(&errMSG{"trouble opening dongle configuration"})
+		return
+	}
+	defer f.Close()
+	p, err := gsm.NewParser(f)
+	if err != nil {
+		log.Println(err)
+		enc.Encode(&errMSG{"trouble scanning dongle configuration"})
+		return
+	}
+	ast, err := p.Parse()
+	if err != nil {
+		log.Println(err)
+		enc.Encode(&errMSG{"trouble parsing dongle configuration"})
+		return
+	}
+	err = ast.ToJSON(w)
+	if err != nil {
+		log.Println(err)
+	}
 }
