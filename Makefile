@@ -4,3 +4,6 @@ build:
 
 start:build
 	./fconf
+
+dev:build
+	./fconf -dev true

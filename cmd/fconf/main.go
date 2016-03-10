@@ -35,6 +35,7 @@ func defaultConfig() *Config {
 
 func main() {
 	c := flag.String("c", "conf/config.json", "path to the configuration file")
+	dev := flag.Bool("dev", false, "set true if running in dev mode")
 	flag.Parse()
 	b, err := ioutil.ReadFile(*c)
 	if err != nil {
@@ -44,6 +45,9 @@ func main() {
 	err = json.Unmarshal(b, cfg)
 	if err != nil {
 		log.Fatal(err)
+	}
+	if *dev {
+		cfg.AsteriskConfig = "sample"
 	}
 	s := newServer(cfg)
 	log.Printf(" starting server on  localhost:%d\n", cfg.Port)
