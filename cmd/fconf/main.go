@@ -197,13 +197,14 @@ func (ww *web) UpdateDongle(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	fName := filepath.Join(ww.cfg.AsteriskConfig, "dongle.conf")
-	f, err := os.OpenFile(fName, os.O_WRONLY|os.O_TRUNC, 0)
+	info, err := os.Stat(fName)
 	if err != nil {
 		log.Println(err)
 		enc.Encode(&errMSG{"trouble opening dongle configuration"})
 		return
 	}
-	defer f.Close()
-	gsm.PrintAst(f, ast)
+	dst := &bytes.Buffer{}
+	gsm.PrintAst(dst, ast)
+	ioutil.WriteFile(fName, dst.Bytes(), info.Mode())
 	io.Copy(w, src)
 }
