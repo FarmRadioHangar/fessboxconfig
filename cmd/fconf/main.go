@@ -99,6 +99,8 @@ type errMSG struct {
 	Message string `json:"error"`
 }
 
+// Dongle implements http.HandleFunc for serving the dongle configuration values
+// as a json object
 func (ww *web) Dongle(w http.ResponseWriter, r *http.Request) {
 	fName := filepath.Join(ww.cfg.AsteriskConfig, "dongle.conf")
 	enc := json.NewEncoder(w)
