@@ -60,6 +60,7 @@ func newServer(c *Config) http.Handler {
 	s := mux.NewRouter()
 	w := newWeb(c)
 	s.HandleFunc("/device/dongle", w.Dongle).Methods("GET")
+	s.HandleFunc("/device/dongle", w.UpdateDongle).Methods("POST")
 	s.PathPrefix("/static/").
 		Handler(http.StripPrefix("/static/", http.FileServer(http.Dir(c.StaticDir))))
 	s.HandleFunc("/", w.Home)
@@ -129,4 +130,7 @@ func (ww *web) Dongle(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Println(err)
 	}
+}
+
+func (ww *web) UpdateDongle(w http.ResponseWriter, r *http.Request) {
 }
