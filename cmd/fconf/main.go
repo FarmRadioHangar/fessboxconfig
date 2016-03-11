@@ -1,9 +1,11 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"flag"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -180,4 +182,28 @@ func (ww *web) Dongle(w http.ResponseWriter, r *http.Request) {
 }
 
 func (ww *web) UpdateDongle(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	ast := &gsm.Ast{}
+	src := &bytes.Buffer{}
+	enc := json.NewEncoder(w)
+	_, err := io.Copy(src, r.Body)
+	if err != nil {
+		enc.Encode(&errMSG{Message: "trouble reading request body"})
+		return
+	}
+	err = ast.LoadJSON(src.Bytes())
+	if err != nil {
+		enc.Encode(&errMSG{Message: "trouble loading request body"})
+		return
+	}
+	fName := filepath.Join(ww.cfg.AsteriskConfig, "dongle.conf")
+	f, err := os.OpenFile(fName, os.O_WRONLY|os.O_TRUNC, 0)
+	if err != nil {
+		log.Println(err)
+		enc.Encode(&errMSG{"trouble opening dongle configuration"})
+		return
+	}
+	defer f.Close()
+	gsm.PrintAst(f, ast)
+	io.Copy(w, src)
 }
