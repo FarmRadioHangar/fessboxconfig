@@ -8,7 +8,9 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"os/signal"
 	"path/filepath"
+	"syscall"
 
 	"github.com/FarmRadioHangar/fessboxconfig/gsm"
 	"github.com/gernest/hot"
@@ -48,10 +50,55 @@ func main() {
 	}
 	if *dev {
 		cfg.AsteriskConfig = "sample"
+		tmp, err := ioutil.TempDir("", "fconf")
+		if err != nil {
+			log.Fatal(err)
+		}
+		c := make(chan os.Signal, 1)
+		signal.Notify(c, syscall.SIGTERM, syscall.SIGINT)
+		go func(dir string) {
+		END:
+			for {
+				select {
+				case <-c:
+					log.Println("removing ", dir)
+					_ = os.RemoveAll(dir)
+					break END
+				}
+			}
+		}(tmp)
+		cfg.AsteriskConfig = tmp
+		err = copyFiles(tmp, "sample")
+		if err != nil {
+			log.Fatal(err)
+		}
 	}
 	s := newServer(cfg)
 	log.Printf(" starting server on  localhost:%d\n", cfg.Port)
 	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", cfg.Port), s))
+}
+
+//copyFiles copies files from src to dst, directories are ignored
+func copyFiles(dst, src string) error {
+	files, err := ioutil.ReadDir(src)
+	if err != nil {
+		return err
+	}
+	for _, file := range files {
+		if file.IsDir() {
+			continue
+		}
+		fname := filepath.Join(src, file.Name())
+		f, err := ioutil.ReadFile(fname)
+		if err != nil {
+			return err
+		}
+		err = ioutil.WriteFile(filepath.Join(dst, file.Name()), f, 0600)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 //newServer returns a http.Handler with all the routes for configuring supported
