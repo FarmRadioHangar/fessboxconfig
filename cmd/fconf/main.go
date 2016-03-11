@@ -104,6 +104,7 @@ type errMSG struct {
 func (ww *web) Dongle(w http.ResponseWriter, r *http.Request) {
 	fName := filepath.Join(ww.cfg.AsteriskConfig, "dongle.conf")
 	enc := json.NewEncoder(w)
+	w.Header().Set("Content-Type", "application/json")
 
 	f, err := os.Open(fName)
 	if err != nil {
