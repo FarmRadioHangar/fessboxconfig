@@ -1,6 +1,6 @@
 
 build:
-	go build ./cmd/fconf
+	go build -o fconf
 
 start:build
 	./fconf
