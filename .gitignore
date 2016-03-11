@@ -4,6 +4,7 @@
 *.so
 
 fconf
+.tmp/
 
 # Folders
 _obj
