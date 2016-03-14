@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/FarmRadioHangar/fessboxconfig"
+	config "github.com/FarmRadioHangar/fessboxconfig/scanner"
 )
 
 // Ast is an abstract syntax tree for a configuration object. The configuration
@@ -66,13 +66,14 @@ func (a *Ast) LoadJSON(src []byte) error {
 func PrintAst(dst io.Writer, src *Ast) {
 	for _, v := range src.sections {
 		if v.name == "main" {
+			fmt.Fprintf(dst, "\n\n")
 			for _, sub := range v.values {
 				fmt.Fprintf(dst, "%s=%s \n", sub.key, sub.value)
 			}
 			fmt.Fprint(dst, "\n\n")
 			continue
 		}
-		fmt.Fprintf(dst, " [ %s ] \n", v.name)
+		fmt.Fprintf(dst, "\n [%s]\n", v.name)
 		for _, sub := range v.values {
 			fmt.Fprintf(dst, "%s=%s \n", sub.key, sub.value)
 		}
