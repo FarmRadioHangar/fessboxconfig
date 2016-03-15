@@ -19,6 +19,7 @@ import (
 	"github.com/gorilla/mux"
 )
 
+//Config holds configuration values for this application.
 type Config struct {
 	Port           int64  `json:"port"`
 	Host           string `json:"host"`
@@ -116,6 +117,15 @@ func newServer(c *Config) http.Handler {
 	return s
 }
 
+// web is the application struct, it defines all the handlers for this
+// application as its methods.
+//
+// It is safe to use this in multiple goroutines
+//
+// This contains a a loaded hot template, so when run in development mode the
+// templates will automatially be reloaded withouth the need to re run the
+// application process. The auto reloading of templates is disabled in
+// production.
 type web struct {
 	cfg *Config
 	tpl *hot.Template
