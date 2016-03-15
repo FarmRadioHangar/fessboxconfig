@@ -123,7 +123,7 @@ func newServer(c *Config) http.Handler {
 // It is safe to use this in multiple goroutines
 //
 // This contains a a loaded hot template, so when run in development mode the
-// templates will automatially be reloaded withouth the need to re run the
+// templates will automatially be reloaded without the need to re run the
 // application process. The auto reloading of templates is disabled in
 // production.
 type web struct {
