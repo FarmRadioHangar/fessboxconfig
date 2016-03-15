@@ -24,7 +24,7 @@ If you have asterisk installed and want to run in production mode
 make start
 ```
 
-If you just want to test in dev mode( No asterisk installation is requires)
+If you just want to test in dev mode( No asterisk installation is required)
 
 ```bash
 make dev
