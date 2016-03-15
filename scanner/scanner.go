@@ -26,7 +26,7 @@ const (
 	ClosingBrace
 )
 
-// Token is the identifier for a check of text.
+// Token is the identifier for a chunk of text.
 type Token struct {
 	Type   TokenType
 	Text   string
