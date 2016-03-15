@@ -197,6 +197,8 @@ func (ww *web) Dongle(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+//UpdateDongle updates the dongle documentation file, via a json object. This
+//doesnot do verification of the object sent with the request.
 func (ww *web) UpdateDongle(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	ast := &gsm.Ast{}
