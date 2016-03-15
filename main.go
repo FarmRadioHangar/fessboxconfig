@@ -131,6 +131,8 @@ type web struct {
 	tpl *hot.Template
 }
 
+//newWeb intialises and returns a new instance of *web, the templates are loaded
+//and if dev mode is set to true then auto reload is enabled.
 func newWeb(cfg *Config) *web {
 	w := &web{cfg: cfg}
 	config := &hot.Config{
@@ -148,6 +150,7 @@ func newWeb(cfg *Config) *web {
 	return w
 }
 
+//Home serves the home page
 func (ww *web) Home(w http.ResponseWriter, r *http.Request) {
 	err := ww.tpl.Execute(w, "index.html", nil)
 	if err != nil {
@@ -161,6 +164,9 @@ type errMSG struct {
 
 // Dongle implements http.HandleFunc for serving the dongle configuration values
 // as a json object
+//
+// This only returns the current values of the dongle configuration file, so it
+// is good for GET requests only.
 func (ww *web) Dongle(w http.ResponseWriter, r *http.Request) {
 	fName := filepath.Join(ww.cfg.AsteriskConfig, "dongle.conf")
 	enc := json.NewEncoder(w)
