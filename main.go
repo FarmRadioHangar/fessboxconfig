@@ -175,20 +175,20 @@ func (ww *web) Dongle(w http.ResponseWriter, r *http.Request) {
 	f, err := os.Open(fName)
 	if err != nil {
 		log.Println(err)
-		enc.Encode(&errMSG{"trouble opening dongle configuration"})
+		_ = enc.Encode(&errMSG{"trouble opening dongle configuration"})
 		return
 	}
-	defer f.Close()
+	defer func() { _ = f.Close() }()
 	p, err := gsm.NewParser(f)
 	if err != nil {
 		log.Println(err)
-		enc.Encode(&errMSG{"trouble scanning dongle configuration"})
+		_ = enc.Encode(&errMSG{"trouble scanning dongle configuration"})
 		return
 	}
 	ast, err := p.Parse()
 	if err != nil {
 		log.Println(err)
-		enc.Encode(&errMSG{"trouble parsing dongle configuration"})
+		_ = enc.Encode(&errMSG{"trouble parsing dongle configuration"})
 		return
 	}
 	err = ast.ToJSON(w)
@@ -204,23 +204,23 @@ func (ww *web) UpdateDongle(w http.ResponseWriter, r *http.Request) {
 	enc := json.NewEncoder(w)
 	_, err := io.Copy(src, r.Body)
 	if err != nil {
-		enc.Encode(&errMSG{Message: "trouble reading request body"})
+		_ = enc.Encode(&errMSG{Message: "trouble reading request body"})
 		return
 	}
 	err = ast.LoadJSON(src.Bytes())
 	if err != nil {
-		enc.Encode(&errMSG{Message: "trouble loading request body"})
+		_ = enc.Encode(&errMSG{Message: "trouble loading request body"})
 		return
 	}
 	fName := filepath.Join(ww.cfg.AsteriskConfig, "dongle.conf")
 	info, err := os.Stat(fName)
 	if err != nil {
 		log.Println(err)
-		enc.Encode(&errMSG{"trouble opening dongle configuration"})
+		_ = enc.Encode(&errMSG{"trouble opening dongle configuration"})
 		return
 	}
 	dst := &bytes.Buffer{}
 	gsm.PrintAst(dst, ast)
-	ioutil.WriteFile(fName, dst.Bytes(), info.Mode())
-	io.Copy(w, src)
+	_ = ioutil.WriteFile(fName, dst.Bytes(), info.Mode())
+	_, _ = io.Copy(w, src)
 }
