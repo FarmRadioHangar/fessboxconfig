@@ -1,7 +1,7 @@
 //Package gsm provides a parser for  asterisk configuration files
 //
 // The abstract syntax tree is basic, and made to accomodate the urgent need to
-// parse the scanneruration file and also as a means to see if scanning is done
+// parse the dongle configuration file and also as a means to see if scanning is done
 // well will the scanner.
 //
 //TODO(gernest) rewrite the AST and move it into a separate package.
