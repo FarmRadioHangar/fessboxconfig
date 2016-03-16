@@ -3,10 +3,7 @@
 Is a configuration manager for asterisk. It provides a simple JSON API for
 reading and configuring asterisk configuration files.
 
-This is intended to provide a full support for parsing asterisk configuration
-files.
-
-Asterisk configuration files are located in `/ect/asterisk`.This application is
+Asterisk configuration files are located in `/etc/asterisk`.This application is
 a full implementation for managing that directory.
 
 # checklist
