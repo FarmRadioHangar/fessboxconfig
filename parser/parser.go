@@ -1,5 +1,4 @@
-//Package gsm provides a parser for dongle scanneruration file for asterisk. The
-//scanneruration format is a subset of the astersk dial plan.
+//Package gsm provides a parser for  asterisk configuration files
 //
 // The abstract syntax tree is basic, and made to accomodate the urgent need to
 // parse the scanneruration file and also as a means to see if scanning is done
