@@ -6,33 +6,19 @@ import (
 	"errors"
 	"io"
 	"unicode"
-)
 
-// TokenType is the type of tokem that will be returned by the Scanner.
-type TokenType int
-
-var eof = rune(-1)
-
-// The following are the token types that are recognized by the scanner
-const (
-	EOF TokenType = iota
-	Comment
-	Section
-	WhiteSpace
-	NewLine
-	Ident
-	Operand
-	OpenBrace
-	ClosingBrace
+	"github.com/FarmRadioHangar/fessboxconfig/ast"
 )
 
 // Token is the identifier for a chunk of text.
 type Token struct {
-	Type   TokenType
+	Type   ast.TokenType
 	Text   string
 	Line   int
 	Column int
 }
+
+const eof = rune(-1)
 
 // Scanner is a lexical scanner for scanning configuration files.
 // This works only on UTF-& text.
@@ -70,11 +56,11 @@ func (s *Scanner) Scan() (*Token, error) {
 	case '\n', '\r':
 		return s.scanNewline()
 	case '=':
-		return s.scanRune(Operand)
+		return s.scanRune(ast.Assign)
 	case '[':
-		return s.scanRune(OpenBrace)
+		return s.scanRune(ast.LBrace)
 	case ']':
-		return s.scanRune(ClosingBrace)
+		return s.scanRune(ast.RBrace)
 	case eof:
 		return nil, io.EOF
 	}
@@ -114,7 +100,7 @@ END:
 	}
 	s.column++
 	tok.Column = s.column
-	tok.Type = Comment
+	tok.Type = ast.Comment
 	tok.Text = buf.String()
 	tok.Line = s.line
 	return tok, nil
@@ -150,7 +136,7 @@ END:
 		}
 	}
 	tok.Column = s.column
-	tok.Type = Comment
+	tok.Type = ast.Comment
 	tok.Text = buf.String()
 	tok.Line = s.line
 	return tok, nil
@@ -170,7 +156,7 @@ func (s *Scanner) scanNewline() (*Token, error) {
 		return nil, err
 	}
 	tok := &Token{}
-	tok.Type = NewLine
+	tok.Type = ast.NLine
 	tok.Text = string(ch)
 	s.column = 0
 	s.line++
@@ -194,14 +180,14 @@ func isIdent(ch rune) bool {
 //
 // TODO(gernest) Accept the character as input argument.
 func (s *Scanner) scanIdent() (*Token, error) {
-	return s.scanRune(Ident)
+	return s.scanRune(ast.Ident)
 }
 
 // scanRune scans the current rune and returns a token of type typ, whose Text
 // is the scanned character
 //
 // Use this for single character tokens
-func (s *Scanner) scanRune(typ TokenType) (*Token, error) {
+func (s *Scanner) scanRune(typ ast.TokenType) (*Token, error) {
 	ch, _, err := s.r.ReadRune()
 	if err != nil {
 		return nil, err
