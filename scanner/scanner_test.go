@@ -4,6 +4,8 @@ import (
 	"io"
 	"strings"
 	"testing"
+
+	"github.com/FarmRadioHangar/fessboxconfig/ast"
 )
 
 func TestScanner(t *testing.T) {
@@ -19,7 +21,7 @@ func TestScanner(t *testing.T) {
 	foo-dash=bar
 	`
 	s := NewScanner(strings.NewReader(src))
-	var tok *Token
+	var tok *ast.Token
 	var err error
 	for err == nil {
 		tok, err = s.Scan()

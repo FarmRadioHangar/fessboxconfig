@@ -6,33 +6,11 @@ import (
 	"errors"
 	"io"
 	"unicode"
+
+	"github.com/FarmRadioHangar/fessboxconfig/ast"
 )
 
-// TokenType is the type of tokem that will be returned by the Scanner.
-type TokenType int
-
-var eof = rune(-1)
-
-// The following are the token types that are recognized by the scanner
-const (
-	EOF TokenType = iota
-	Comment
-	Section
-	WhiteSpace
-	NewLine
-	Ident
-	Operand
-	OpenBrace
-	ClosingBrace
-)
-
-// Token is the identifier for a chunk of text.
-type Token struct {
-	Type   TokenType
-	Text   string
-	Line   int
-	Column int
-}
+const eof = rune(-1)
 
 // Scanner is a lexical scanner for scanning configuration files.
 // This works only on UTF-& text.
@@ -57,7 +35,7 @@ func NewScanner(src io.Reader) *Scanner {
 //
 // Anything after ; is considered a comment. White space is preserved together
 // with  new lines. New lines and spaces are interpreted differently.
-func (s *Scanner) Scan() (*Token, error) {
+func (s *Scanner) Scan() (*ast.Token, error) {
 	ch := s.peek()
 	if isIdent(ch) {
 		return s.scanIdent()
@@ -70,11 +48,11 @@ func (s *Scanner) Scan() (*Token, error) {
 	case '\n', '\r':
 		return s.scanNewline()
 	case '=':
-		return s.scanRune(Operand)
+		return s.scanRune(ast.Assign)
 	case '[':
-		return s.scanRune(OpenBrace)
+		return s.scanRune(ast.LBrace)
 	case ']':
-		return s.scanRune(ClosingBrace)
+		return s.scanRune(ast.RBrace)
 	case eof:
 		return nil, io.EOF
 	}
@@ -91,8 +69,8 @@ func (s *Scanner) Scan() (*Token, error) {
 //
 // TODO(gernest) accept the comment identifier, or check whether the first
 // rune is the supported token identifier.
-func (s *Scanner) scanComment() (*Token, error) {
-	tok := &Token{}
+func (s *Scanner) scanComment() (*ast.Token, error) {
+	tok := &ast.Token{}
 	buf := &bytes.Buffer{}
 END:
 	for {
@@ -114,7 +92,7 @@ END:
 	}
 	s.column++
 	tok.Column = s.column
-	tok.Type = Comment
+	tok.Type = ast.Comment
 	tok.Text = buf.String()
 	tok.Line = s.line
 	return tok, nil
@@ -124,8 +102,8 @@ END:
 //whitespace character.
 //
 // Tabs ('\t') and space(' ') all represent white space.
-func (s *Scanner) scanWhitespace() (*Token, error) {
-	tok := &Token{}
+func (s *Scanner) scanWhitespace() (*ast.Token, error) {
+	tok := &ast.Token{}
 
 	// There can be arbitrary spaces so we need to bugger them up.
 	buf := &bytes.Buffer{}
@@ -150,7 +128,7 @@ END:
 		}
 	}
 	tok.Column = s.column
-	tok.Type = Comment
+	tok.Type = ast.Comment
 	tok.Text = buf.String()
 	tok.Line = s.line
 	return tok, nil
@@ -164,13 +142,13 @@ END:
 // character('\n')
 //
 // TODO(gernest) accept a new line character as input.
-func (s *Scanner) scanNewline() (*Token, error) {
+func (s *Scanner) scanNewline() (*ast.Token, error) {
 	ch, _, err := s.r.ReadRune()
 	if err != nil {
 		return nil, err
 	}
-	tok := &Token{}
-	tok.Type = NewLine
+	tok := &ast.Token{}
+	tok.Type = ast.NLine
 	tok.Text = string(ch)
 	s.column = 0
 	s.line++
@@ -193,20 +171,20 @@ func isIdent(ch rune) bool {
 //scanIdent returns the current character in the input source as an Ident Token
 //
 // TODO(gernest) Accept the character as input argument.
-func (s *Scanner) scanIdent() (*Token, error) {
-	return s.scanRune(Ident)
+func (s *Scanner) scanIdent() (*ast.Token, error) {
+	return s.scanRune(ast.Ident)
 }
 
 // scanRune scans the current rune and returns a token of type typ, whose Text
 // is the scanned character
 //
 // Use this for single character tokens
-func (s *Scanner) scanRune(typ TokenType) (*Token, error) {
+func (s *Scanner) scanRune(typ ast.TokenType) (*ast.Token, error) {
 	ch, _, err := s.r.ReadRune()
 	if err != nil {
 		return nil, err
 	}
-	tok := &Token{}
+	tok := &ast.Token{}
 	tok.Type = typ
 	tok.Text = string(ch)
 	s.column++

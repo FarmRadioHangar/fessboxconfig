@@ -1,8 +1,8 @@
-//Package gsm provides a parser for dongle configuration file for asterisk. The
-//configuration format is a subset of the astersk dial plan.
+//Package gsm provides a parser for dongle scanneruration file for asterisk. The
+//scanneruration format is a subset of the astersk dial plan.
 //
 // The abstract syntax tree is basic, and made to accomodate the urgent need to
-// parse the configuration file and also as a means to see if scanning is done
+// parse the scanneruration file and also as a means to see if scanning is done
 // well will the scanner.
 //
 //TODO(gernest) rewrite the AST and move it into a separate package.
@@ -14,10 +14,11 @@ import (
 	"fmt"
 	"io"
 
-	config "github.com/FarmRadioHangar/fessboxconfig/scanner"
+	"github.com/FarmRadioHangar/fessboxconfig/ast"
+	"github.com/FarmRadioHangar/fessboxconfig/scanner"
 )
 
-// Ast is an abstract syntax tree for a configuration object. The configuration
+// Ast is an abstract syntax tree for a scanneruration object. The scanneruration
 // format should be section based( or you can say namespacing).
 type Ast struct {
 	sections []*NodeSection
@@ -90,8 +91,8 @@ func PrintAst(dst io.Writer, src *Ast) {
 	}
 }
 
-//NodeSection represent a section in the configuration object. Sections are name
-//spaces that contains configurations definitions under them.
+//NodeSection represent a section in the scanneruration object. Sections are name
+//spaces that contains scannerurations definitions under them.
 type NodeSection struct {
 	name   string
 	line   int
@@ -109,7 +110,7 @@ func (n *NodeSection) Get(key string) (string, error) {
 	return "", errors.New("key not found")
 }
 
-//nodeIdent represents a configuration definition, which can be the key value
+//nodeIdent represents a scanneruration definition, which can be the key value
 //definition.
 type nodeIdent struct {
 	key   string
@@ -117,23 +118,23 @@ type nodeIdent struct {
 	line  int
 }
 
-// Parser is a Parser for configuration files. It supports utf-8 encoded
-// configuration files.
+// Parser is a Parser for scanneruration files. It supports utf-8 encoded
+// scanneruration files.
 //
-// Only modem configuration files are supported for the momment.
+// Only modem scanneruration files are supported for the momment.
 type Parser struct {
-	tokens  []*config.Token
+	tokens  []*ast.Token
 	Ast     *Ast
 	currPos int
 }
 
 //NewParser returns a new Parser that parses input from src. The returned Parser
-//supports gsm modem configuration format only.
+//supports gsm modem scanneruration format only.
 func NewParser(src io.Reader) (*Parser, error) {
-	s := config.NewScanner(src)
-	var toks []*config.Token
+	s := scanner.NewScanner(src)
+	var toks []*ast.Token
 	var err error
-	var tok *config.Token
+	var tok *ast.Token
 	for err == nil {
 		tok, err = s.Scan()
 		if err != nil {
@@ -146,7 +147,7 @@ func NewParser(src io.Reader) (*Parser, error) {
 		}
 		if tok != nil {
 			switch tok.Type {
-			case config.WhiteSpace, config.Comment:
+			case ast.WhiteSpace, ast.Comment:
 
 				// Skip comments and whitespaces but preserve the newlines to aid in
 				// parsing
@@ -170,17 +171,17 @@ func (p *Parser) Parse() (*Ast, error) {
 END:
 	for {
 		tok := p.next()
-		if tok.Type == config.EOF {
+		if tok.Type == ast.EOF {
 			break END
 		}
 		switch tok.Type {
-		case config.OpenBrace:
+		case ast.LBrace:
 			p.rewind()
 			err = p.parseSection()
 			if err != nil {
 				break END
 			}
-		case config.Ident:
+		case ast.Ident:
 			p.rewind()
 			err = p.parseIdent(mainSec)
 			if err != nil {
@@ -196,9 +197,9 @@ END:
 	return p.Ast, err
 }
 
-func (p *Parser) next() *config.Token {
+func (p *Parser) next() *ast.Token {
 	if p.currPos >= len(p.tokens)-1 {
-		return &config.Token{Type: config.EOF}
+		return &ast.Token{Type: ast.EOF}
 	}
 	t := p.tokens[p.currPos]
 	p.currPos++
@@ -211,7 +212,7 @@ func (p *Parser) seek(at int) {
 
 func (p *Parser) parseSection() (err error) {
 	left := p.next()
-	if left.Type != config.OpenBrace {
+	if left.Type != ast.LBrace {
 		return errors.New("bad token")
 	}
 	ns := &NodeSection{}
@@ -220,34 +221,34 @@ END:
 	for {
 	BEGIN:
 		tok := p.next()
-		if tok.Type == config.EOF {
+		if tok.Type == ast.EOF {
 			p.rewind()
 			break END
 		}
 
 		if !completeName {
 			switch tok.Type {
-			case config.Ident:
+			case ast.Ident:
 				ns.name = ns.name + tok.Text
 				goto BEGIN
-			case config.ClosingBrace:
+			case ast.RBrace:
 				completeName = true
 				goto BEGIN
 			}
 		}
 		switch tok.Type {
-		case config.NewLine:
+		case ast.NLine:
 			n1 := p.next()
-			if n1.Type == config.NewLine {
+			if n1.Type == ast.NLine {
 				n2 := p.next()
-				if n2.Type == config.NewLine {
+				if n2.Type == ast.NLine {
 					break END
 				}
 				p.rewind()
 				goto BEGIN
 			}
 			goto BEGIN
-		case config.Ident:
+		case ast.Ident:
 			p.rewind()
 			err = p.parseIdent(ns)
 			if err != nil {
@@ -274,17 +275,17 @@ END:
 	for {
 	BEGIN:
 		tok := p.next()
-		if tok.Type == config.EOF {
+		if tok.Type == ast.EOF {
 			p.rewind()
 			break END
 		}
 
 		if !doneKey {
 			switch tok.Type {
-			case config.Ident:
+			case ast.Ident:
 				n.key = n.key + tok.Text
 				goto BEGIN
-			case config.Operand:
+			case ast.Assign:
 				doneKey = true
 				goto BEGIN
 			default:
@@ -294,10 +295,10 @@ END:
 
 		}
 		switch tok.Type {
-		case config.Ident:
+		case ast.Ident:
 			n.value = n.value + tok.Text
 			goto BEGIN
-		case config.NewLine:
+		case ast.NLine:
 			break END
 		default:
 			err = errors.New("some fish")
