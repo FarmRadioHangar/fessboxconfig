@@ -1,3 +1,11 @@
+//Package gsm provides a parser for dongle configuration file for asterisk. The
+//configuration format is a subset of the astersk dial plan.
+//
+// The abstract syntax tree is basic, and made to accomodate the urgent need to
+// parse the configuration file and also as a means to see if scanning is done
+// well will the scanner.
+//
+//TODO(gernest) rewrite the AST and move it into a separate package.
 package gsm
 
 import (
