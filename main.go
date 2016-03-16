@@ -109,8 +109,8 @@ func copyFiles(dst, src string) error {
 func newServer(c *Config) http.Handler {
 	s := mux.NewRouter()
 	w := newWeb(c)
-	s.HandleFunc("/device/dongle", w.Dongle).Methods("GET")
-	s.HandleFunc("/device/dongle", w.UpdateDongle).Methods("POST")
+	s.HandleFunc("/config/{filename}", w.Dongle).Methods("GET")
+	s.HandleFunc("/config/{filename}", w.UpdateDongle).Methods("POST")
 	s.PathPrefix("/static/").
 		Handler(http.StripPrefix("/static/", http.FileServer(http.Dir(c.StaticDir))))
 	s.HandleFunc("/", w.Home)
@@ -168,7 +168,9 @@ type errMSG struct {
 // This only returns the current values of the dongle configuration file, so it
 // is good for GET requests only.
 func (ww *web) Dongle(w http.ResponseWriter, r *http.Request) {
-	fName := filepath.Join(ww.cfg.AsteriskConfig, "dongle.conf")
+	vars := mux.Vars(r)
+	file := vars["filename"] + ".conf"
+	fName := filepath.Join(ww.cfg.AsteriskConfig, file)
 	enc := json.NewEncoder(w)
 	w.Header().Set("Content-Type", "application/json")
 
@@ -219,7 +221,9 @@ func (ww *web) UpdateDongle(w http.ResponseWriter, r *http.Request) {
 		_ = enc.Encode(&errMSG{Message: "trouble loading request body"})
 		return
 	}
-	fName := filepath.Join(ww.cfg.AsteriskConfig, "dongle.conf")
+	vars := mux.Vars(r)
+	file := vars["filename"] + ".conf"
+	fName := filepath.Join(ww.cfg.AsteriskConfig, file)
 	info, err := os.Stat(fName)
 	if err != nil {
 		log.Println(err)
