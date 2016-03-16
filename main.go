@@ -14,7 +14,7 @@ import (
 	"path/filepath"
 	"syscall"
 
-	"github.com/FarmRadioHangar/fessboxconfig/gsm"
+	"github.com/FarmRadioHangar/fessboxconfig/parser"
 	"github.com/gernest/hot"
 	"github.com/gorilla/mux"
 )
@@ -179,7 +179,7 @@ func (ww *web) Dongle(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer func() { _ = f.Close() }()
-	p, err := gsm.NewParser(f)
+	p, err := parser.NewParser(f)
 	if err != nil {
 		log.Println(err)
 		_ = enc.Encode(&errMSG{"trouble scanning dongle configuration"})
@@ -206,7 +206,7 @@ func (ww *web) Dongle(w http.ResponseWriter, r *http.Request) {
 // TODO(gernest) do some kind of verification?
 func (ww *web) UpdateDongle(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	ast := &gsm.Ast{}
+	ast := &parser.Ast{}
 	src := &bytes.Buffer{}
 	enc := json.NewEncoder(w)
 	_, err := io.Copy(src, r.Body)
@@ -227,7 +227,7 @@ func (ww *web) UpdateDongle(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	dst := &bytes.Buffer{}
-	gsm.PrintAst(dst, ast)
+	parser.PrintAst(dst, ast)
 	_ = ioutil.WriteFile(fName, dst.Bytes(), info.Mode())
 	_, _ = io.Copy(w, src)
 }

@@ -6,7 +6,7 @@
 // well will the scanner.
 //
 //TODO(gernest) rewrite the AST and move it into a separate package.
-package gsm
+package parser
 
 import (
 	"encoding/json"
