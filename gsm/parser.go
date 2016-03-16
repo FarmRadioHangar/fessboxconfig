@@ -1,8 +1,8 @@
-//Package gsm provides a parser for dongle configuration file for asterisk. The
-//configuration format is a subset of the astersk dial plan.
+//Package gsm provides a parser for dongle scanneruration file for asterisk. The
+//scanneruration format is a subset of the astersk dial plan.
 //
 // The abstract syntax tree is basic, and made to accomodate the urgent need to
-// parse the configuration file and also as a means to see if scanning is done
+// parse the scanneruration file and also as a means to see if scanning is done
 // well will the scanner.
 //
 //TODO(gernest) rewrite the AST and move it into a separate package.
@@ -15,10 +15,10 @@ import (
 	"io"
 
 	"github.com/FarmRadioHangar/fessboxconfig/ast"
-	config "github.com/FarmRadioHangar/fessboxconfig/scanner"
+	"github.com/FarmRadioHangar/fessboxconfig/scanner"
 )
 
-// Ast is an abstract syntax tree for a configuration object. The configuration
+// Ast is an abstract syntax tree for a scanneruration object. The scanneruration
 // format should be section based( or you can say namespacing).
 type Ast struct {
 	sections []*NodeSection
@@ -91,8 +91,8 @@ func PrintAst(dst io.Writer, src *Ast) {
 	}
 }
 
-//NodeSection represent a section in the configuration object. Sections are name
-//spaces that contains configurations definitions under them.
+//NodeSection represent a section in the scanneruration object. Sections are name
+//spaces that contains scannerurations definitions under them.
 type NodeSection struct {
 	name   string
 	line   int
@@ -110,7 +110,7 @@ func (n *NodeSection) Get(key string) (string, error) {
 	return "", errors.New("key not found")
 }
 
-//nodeIdent represents a configuration definition, which can be the key value
+//nodeIdent represents a scanneruration definition, which can be the key value
 //definition.
 type nodeIdent struct {
 	key   string
@@ -118,10 +118,10 @@ type nodeIdent struct {
 	line  int
 }
 
-// Parser is a Parser for configuration files. It supports utf-8 encoded
-// configuration files.
+// Parser is a Parser for scanneruration files. It supports utf-8 encoded
+// scanneruration files.
 //
-// Only modem configuration files are supported for the momment.
+// Only modem scanneruration files are supported for the momment.
 type Parser struct {
 	tokens  []*ast.Token
 	Ast     *Ast
@@ -129,9 +129,9 @@ type Parser struct {
 }
 
 //NewParser returns a new Parser that parses input from src. The returned Parser
-//supports gsm modem configuration format only.
+//supports gsm modem scanneruration format only.
 func NewParser(src io.Reader) (*Parser, error) {
-	s := config.NewScanner(src)
+	s := scanner.NewScanner(src)
 	var toks []*ast.Token
 	var err error
 	var tok *ast.Token
