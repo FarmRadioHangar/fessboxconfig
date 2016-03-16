@@ -1,6 +1,31 @@
-# fessboxconfig
+# go-asterisk-config
 
-Is a configuration manager for fessbox
+Is a configuration manager for asterisk. It provides a simple JSON API for
+reading and configuring asterisk configuration files.
+
+This is intended to provide a full support for parsing asterisk configuration
+files.
+
+Asterisk configuration files are located in `/ect/asterisk`.This application is
+a full implementation for managing that directory.
+
+# checklist
+
+- [WIP]  JSON API to work with the files
+- [x] Asterisk configuration format
+  - [x] context
+  - [x] options
+  - [ ] templates
+  - [ ] include
+  - [ ] exec
+  - [x] comments
+
+- [TODO] Dial plan
+
+# Links
+- [asterisk](http://www.asterisk.org/)
+- [asterisk configuration format](https://wiki.asterisk.org/wiki/display/AST/Config+File+Format)
+
 
 # Developing
 
