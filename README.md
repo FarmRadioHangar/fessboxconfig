@@ -16,6 +16,8 @@ a full implementation for managing that directory.
   - [ ] include
   - [ ] exec
   - [x] comments
+    - [x] single line comments
+    - [x] block comments
 
 - [TODO] Dial plan
 
