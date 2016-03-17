@@ -7,12 +7,30 @@ type Node interface {
 }
 
 type Context struct {
-	Head []Node
-	Body []Node
+	Head        Node
+	Templates   []Node
+	Assignments []AsignStmt
+	Objects     []Object
 }
+
+type Template Context
 
 type AsignStmt struct {
 	Left  []Node
-	Equal Node
+	Equal Node // =
 	Right []Node
+}
+
+type Object struct {
+	Left   []Node
+	Assign Node // =>
+	Right  []Node
+}
+
+type File struct {
+	Comments    []Node
+	Contextx    []Context
+	Assignments []AsignStmt
+	Objects     []Object
+	Templates   []Template
 }
