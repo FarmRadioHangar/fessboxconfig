@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"bytes"
 	"errors"
+	"fmt"
 	"io"
 	"unicode"
 
@@ -15,11 +16,12 @@ const eof = rune(-1)
 // Scanner is a lexical scanner for scanning configuration files.
 // This works only on UTF-& text.
 type Scanner struct {
-	r      *bufio.Reader
-	txt    *bytes.Buffer
-	line   int
-	err    error
-	column int
+	r       *bufio.Reader
+	txt     *bytes.Buffer
+	currPos int
+	line    int
+	err     error
+	column  int
 }
 
 // NewScanner takes src and returns a new Scanner.
@@ -99,7 +101,7 @@ END:
 		ch, _, err := s.r.ReadRune()
 		if err != nil {
 			if err.Error() == io.EOF.Error() {
-
+				fmt.Println("END")
 				break END
 			}
 			return nil, err
@@ -107,6 +109,7 @@ END:
 		switch ch {
 		case '\n', '\r':
 			if isBlock {
+				buf.WriteRune(ch)
 				goto begin
 			}
 			_ = s.r.UnreadRune()
@@ -118,6 +121,7 @@ END:
 					ch, _, err = s.r.ReadRune()
 					if err != nil {
 						if err.Error() == io.EOF.Error() {
+
 							goto final
 						}
 						return nil, err
@@ -129,13 +133,17 @@ END:
 					break END
 				}
 			}
-
+			fallthrough
 		default:
 			_, _ = buf.WriteRune(ch)
 		}
 	}
 final:
 	s.column++
+	//fmt.Printf(" HERE  %d %d \n", s.currPos, buf.Len())
+	tok.Begin = s.currPos
+	s.currPos += buf.Len() // advance the current position
+	tok.End = s.currPos
 	tok.Column = s.column
 	tok.Type = ast.Comment
 	tok.Text = buf.String()
@@ -173,7 +181,10 @@ END:
 		}
 	}
 	tok.Column = s.column
-	tok.Type = ast.Comment
+	tok.Begin = s.currPos
+	s.currPos += buf.Len()
+	tok.End = s.currPos
+	tok.Type = ast.WhiteSpace
 	tok.Text = buf.String()
 	tok.Line = s.line
 	return tok, nil
@@ -188,13 +199,16 @@ END:
 //
 // TODO(gernest) accept a new line character as input.
 func (s *Scanner) scanNewline() (*ast.Token, error) {
-	ch, _, err := s.r.ReadRune()
+	ch, size, err := s.r.ReadRune()
 	if err != nil {
 		return nil, err
 	}
 	tok := &ast.Token{}
 	tok.Type = ast.NLine
 	tok.Text = string(ch)
+	tok.Begin = s.currPos
+	s.currPos += size
+	tok.End = s.currPos
 	s.column = 0
 	s.line++
 	tok.Column = s.column
@@ -225,13 +239,16 @@ func (s *Scanner) scanIdent() (*ast.Token, error) {
 //
 // Use this for single character tokens
 func (s *Scanner) scanRune(typ ast.TokenType) (*ast.Token, error) {
-	ch, _, err := s.r.ReadRune()
+	ch, size, err := s.r.ReadRune()
 	if err != nil {
 		return nil, err
 	}
 	tok := &ast.Token{}
 	tok.Type = typ
 	tok.Text = string(ch)
+	tok.Begin = s.currPos
+	s.currPos += size
+	tok.End = s.currPos
 	s.column++
 	tok.Column = s.column
 	tok.Line = s.line

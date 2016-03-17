@@ -128,7 +128,10 @@ get to here --;`
 			}
 		}
 		if tok != nil {
+			txt := string(src[tok.Begin:tok.End])
+			if txt != tok.Text {
+				t.Errorf("expected %s got %s", tok.Text, txt)
+			}
 		}
 	}
-
 }
