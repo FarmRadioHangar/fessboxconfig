@@ -14,6 +14,9 @@ const (
 	Assign
 	LBrace
 	RBrace
+	LBracket // )
+	RBracket // (
+	Exclam   // !
 )
 
 // Token is the identifier for a chunk of text.
