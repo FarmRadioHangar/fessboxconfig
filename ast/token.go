@@ -11,9 +11,9 @@ const (
 	WhiteSpace
 	NLine
 	Ident
-	Assign
-	LBrace
-	RBrace
+	Assign   // =
+	LBrace   // [
+	RBrace   // ]
 	LBracket // )
 	RBracket // (
 	Exclam   // !
