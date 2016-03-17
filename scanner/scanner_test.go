@@ -109,3 +109,26 @@ func TestScanner(t *testing.T) {
 		}
 	}
 }
+
+func TestScanBlockComments(t *testing.T) {
+	src := `[section-name]
+setting=true
+;-- this is a block comment that begins on this line
+and continues across multiple lines, until we
+get to here --;`
+
+	s := NewScanner(strings.NewReader(src))
+	var tok *ast.Token
+	var err error
+	for err == nil {
+		tok, err = s.Scan()
+		if err != nil {
+			if err.Error() != io.EOF.Error() {
+				t.Fatal(err)
+			}
+		}
+		if tok != nil {
+		}
+	}
+
+}

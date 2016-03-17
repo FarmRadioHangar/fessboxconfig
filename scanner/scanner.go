@@ -72,8 +72,24 @@ func (s *Scanner) Scan() (*ast.Token, error) {
 func (s *Scanner) scanComment() (*ast.Token, error) {
 	tok := &ast.Token{}
 	buf := &bytes.Buffer{}
+	isBlock := false
+	for _ = range make([]struct{}, 4) {
+		ch, _, err := s.r.ReadRune()
+		if err != nil {
+			if err.Error() == io.EOF.Error() {
+				goto final
+			}
+			return nil, err
+		}
+		buf.WriteRune(ch)
+	}
+
+	if buf.String() == ";-- " {
+		isBlock = true
+	}
 END:
 	for {
+	begin:
 		ch, _, err := s.r.ReadRune()
 		if err != nil {
 			if err.Error() == io.EOF.Error() {
@@ -84,12 +100,35 @@ END:
 		}
 		switch ch {
 		case '\n', '\r':
+			if isBlock {
+				goto begin
+			}
 			_ = s.r.UnreadRune()
 			break END
+		case '-':
+			if isBlock {
+				var str string
+				for _ = range make([]struct{}, 2) {
+					ch, _, err = s.r.ReadRune()
+					if err != nil {
+						if err.Error() == io.EOF.Error() {
+							goto final
+						}
+						return nil, err
+					}
+					str += string(ch)
+				}
+				buf.WriteString(str)
+				if str == "-;" {
+					break END
+				}
+			}
+
 		default:
 			_, _ = buf.WriteRune(ch)
 		}
 	}
+final:
 	s.column++
 	tok.Column = s.column
 	tok.Type = ast.Comment
