@@ -25,4 +25,6 @@ type Token struct {
 	Text   string
 	Line   int
 	Column int
+	Begin  int
+	End    int
 }
