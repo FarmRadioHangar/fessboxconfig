@@ -53,6 +53,12 @@ func (s *Scanner) Scan() (*ast.Token, error) {
 		return s.scanRune(ast.LBrace)
 	case ']':
 		return s.scanRune(ast.RBrace)
+	case '(':
+		return s.scanRune(ast.LBracket)
+	case ')':
+		return s.scanRune(ast.RBracket)
+	case '!':
+		return s.scanRune(ast.Exclam)
 	case eof:
 		return nil, io.EOF
 	}
