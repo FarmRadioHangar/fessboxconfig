@@ -29,7 +29,7 @@ type Object struct {
 
 type File struct {
 	Comments    []Node
-	Contextx    []Context
+	Contexts    []Context
 	Assignments []AsignStmt
 	Objects     []Object
 	Templates   []Template
