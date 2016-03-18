@@ -115,13 +115,13 @@ END:
 			_ = s.r.UnreadRune()
 			break END
 		case '-':
+			buf.WriteRune(ch)
 			if isBlock {
 				var str string
 				for _ = range make([]struct{}, 2) {
 					ch, _, err = s.r.ReadRune()
 					if err != nil {
 						if err.Error() == io.EOF.Error() {
-
 							goto final
 						}
 						return nil, err
@@ -133,14 +133,12 @@ END:
 					break END
 				}
 			}
-			fallthrough
 		default:
 			_, _ = buf.WriteRune(ch)
 		}
 	}
 final:
 	s.column++
-	//fmt.Printf(" HERE  %d %d \n", s.currPos, buf.Len())
 	tok.Begin = s.currPos
 	s.currPos += buf.Len() // advance the current position
 	tok.End = s.currPos
