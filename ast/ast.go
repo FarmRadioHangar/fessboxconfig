@@ -11,6 +11,7 @@ type Context struct {
 	Templates   []Node
 	Assignments []AsignStmt
 	Objects     []Object
+	Comments    []Node
 }
 
 type Template Context
