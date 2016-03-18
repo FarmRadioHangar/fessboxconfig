@@ -117,6 +117,21 @@ type nodeIdent struct {
 	line  int
 }
 
+type node struct {
+	begin, end int
+	txt        string
+}
+
+func (n *node) Begin() int {
+	return n.begin
+}
+func (n *node) Text() string {
+	return n.txt
+}
+func (n *node) End() int {
+	return n.end
+}
+
 // Parser is a Parser for scanneruration files. It supports utf-8 encoded
 // scanneruration files.
 //
@@ -125,6 +140,7 @@ type Parser struct {
 	tokens  []*ast.Token
 	Ast     *Ast
 	currPos int
+	Ass     *ast.File
 }
 
 //NewParser returns a new Parser that parses input from src. The returned Parser
@@ -157,7 +173,7 @@ func NewParser(src io.Reader) (*Parser, error) {
 
 		}
 	}
-	return &Parser{tokens: toks, Ast: &Ast{}}, nil
+	return &Parser{tokens: toks, Ast: &Ast{}, Ass: &ast.File{}}, nil
 }
 
 // Parse parses the scanned input and return its *Ast or arror if any.
