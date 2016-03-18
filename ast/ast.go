@@ -21,11 +21,7 @@ type AsignStmt struct {
 	Right []Node
 }
 
-type Object struct {
-	Left   []Node
-	Assign Node // =>
-	Right  []Node
-}
+type Object AsignStmt
 
 type File struct {
 	Comments    []Node
