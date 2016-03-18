@@ -139,6 +139,8 @@ func newWeb(cfg *Config) *web {
 		Watch:          true,
 		BaseName:       "fconf",
 		Dir:            cfg.TemplatesDir,
+		LeftDelim:      "{%",
+		RightDelim:     "%}",
 		FilesExtension: []string{".tpl", ".html", ".tmpl"},
 	}
 
