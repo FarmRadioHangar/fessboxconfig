@@ -212,6 +212,121 @@ END:
 	return p.Ast, err
 }
 
+func (p *Parser) newParse() (*ast.File, error) {
+	return nil, nil
+}
+
+func (p *Parser) assignStmt() (ast.AsignStmt, error) {
+	a := ast.AsignStmt{}
+	var isLeft = true
+END:
+	for {
+		tok := p.next()
+		switch tok.Type {
+		case ast.EOF:
+			break END
+		case ast.Ident:
+			n, err := p.assignIdent()
+			if err != nil {
+				break END
+			}
+			if isLeft {
+				a.Left = append(a.Left, n)
+				continue
+			}
+			a.Right = append(a.Right, n)
+		case ast.Assign:
+			peek := p.next()
+			n := &node{}
+			n.begin = tok.Begin
+			n.txt += tok.Text
+			n.end = tok.End
+			if peek.Type == ast.Greater {
+				n.txt += peek.Text
+				n.end = peek.End
+			} else {
+				p.rewind()
+			}
+			a.Equal = n
+			isLeft = false
+		case ast.NLine:
+			break END
+		}
+	}
+	return a, nil
+}
+
+func (p *Parser) assignIdent() (ast.Node, error) {
+	n := &node{}
+	tok := p.next()
+	if tok.Type == ast.EOF {
+		return nil, io.EOF
+	}
+	n.begin = tok.Begin
+END:
+	for {
+		tok = p.next()
+		if tok.Type == ast.EOF {
+			return nil, io.EOF
+		}
+		if tok.Type != ast.Ident {
+			break END
+		}
+		n.txt = tok.Text
+	}
+	return n, nil
+}
+func (p *Parser) context() (ast.Context, error) {
+	ctx := ast.Context{}
+END:
+	for {
+		tok := p.next()
+		switch tok.Type {
+		case ast.LBrace:
+			n, err := p.contextHead()
+			if err != nil {
+				break END
+			}
+			ctx.Head = n
+		case ast.LBracket:
+			tpl, err := p.contextTemplates()
+			if err != nil {
+				break END
+			}
+			ctx.Templates = append(ctx.Templates, tpl...)
+		case ast.Comment:
+			c := &node{
+				begin: tok.Begin,
+				end:   tok.End,
+				txt:   tok.Text,
+			}
+			ctx.Comments = append(ctx.Comments, c)
+		case ast.Ident:
+			n, err := p.assignStmt()
+			if err != nil {
+				break END
+			}
+			if n.Equal.Text() == "=>" {
+				ctx.Objects = append(ctx.Objects, ast.Object(n))
+				continue
+			}
+			ctx.Assignments = append(ctx.Assignments, n)
+		case ast.EOF:
+			break END
+			break END
+		}
+	}
+	return ctx, nil
+}
+
+func (p *Parser) contextHead() (ast.Node, error) {
+	return nil, nil
+}
+
+func (p *Parser) contextTemplates() ([]ast.Node, error) {
+	return nil, nil
+}
+
 func (p *Parser) next() *ast.Token {
 	if p.currPos >= len(p.tokens)-1 {
 		return &ast.Token{Type: ast.EOF}
