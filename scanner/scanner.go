@@ -89,7 +89,7 @@ func (s *Scanner) scanComment() (*ast.Token, error) {
 			}
 			return nil, err
 		}
-		buf.WriteRune(ch)
+		_, _ = buf.WriteRune(ch)
 	}
 
 	if buf.String() == ";-- " {
@@ -109,13 +109,13 @@ END:
 		switch ch {
 		case '\n', '\r':
 			if isBlock {
-				buf.WriteRune(ch)
+				_, _ = buf.WriteRune(ch)
 				goto begin
 			}
 			_ = s.r.UnreadRune()
 			break END
 		case '-':
-			buf.WriteRune(ch)
+			_, _ = buf.WriteRune(ch)
 			if isBlock {
 				var str string
 				for _ = range make([]struct{}, 2) {
@@ -128,7 +128,7 @@ END:
 					}
 					str += string(ch)
 				}
-				buf.WriteString(str)
+				_, _ = buf.WriteString(str)
 				if str == "-;" {
 					break END
 				}
