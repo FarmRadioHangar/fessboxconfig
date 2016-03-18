@@ -18,6 +18,7 @@ const (
 	RBracket // (
 	Exclam   // !
 	Comma    // ,
+	Greater  //>
 )
 
 // Token is the identifier for a chunk of text.

@@ -63,6 +63,8 @@ func (s *Scanner) Scan() (*ast.Token, error) {
 		return s.scanRune(ast.Exclam)
 	case ',':
 		return s.scanRune(ast.Comma)
+	case '>':
+		return s.scanRune(ast.Greater)
 	case eof:
 		return nil, io.EOF
 	}
