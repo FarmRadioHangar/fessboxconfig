@@ -179,6 +179,7 @@ func (p *Parser) context() (ast.Context, error) {
 	ctx := ast.Context{}
 END:
 	for {
+	START:
 		tok := p.peek()
 		switch tok.Type {
 		case ast.LBrace:
@@ -210,6 +211,15 @@ END:
 				continue
 			}
 			ctx.Assignments = append(ctx.Assignments, n)
+		case ast.NLine:
+			for _ = range make([]struct{}, 2) {
+				next := p.next()
+				if next.Type != ast.NLine {
+					p.rewind()
+					goto START
+				}
+			}
+			break END
 		case ast.EOF:
 			break END
 		}
@@ -282,7 +292,7 @@ END:
 	if perr != nil {
 		return nil, perr
 	}
-	return nil, nil
+	return rst, nil
 }
 
 func (p *Parser) next() *ast.Token {
