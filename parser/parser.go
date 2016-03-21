@@ -8,6 +8,7 @@
 package parser
 
 import (
+	"fmt"
 	"io"
 
 	"github.com/FarmRadioHangar/fessboxconfig/ast"
@@ -68,7 +69,49 @@ func NewParser(src io.Reader) (*Parser, error) {
 
 // Parse parses the scanned input and return its *Ast or arror if any.
 func (p *Parser) Parse() (*ast.File, error) {
-	return nil, nil
+	var perr error
+END:
+	for {
+		peek := p.peek()
+		if peek.Type == ast.EOF {
+			break END
+		}
+		switch peek.Type {
+		case ast.LBrace:
+			ctx, err := p.context()
+			if err != nil {
+				perr = err
+				break END
+			}
+			if len(ctx.Templates) == 1 {
+				t := ctx.Templates[0]
+				if t.Text() == "!" {
+					p.Ass.Templates = append(p.Ass.Templates, ast.Template(ctx))
+					continue
+				}
+			}
+			p.Ass.Contexts = append(p.Ass.Contexts, ctx)
+		case ast.Comment:
+			tok := p.next()
+			n := &node{
+				begin: tok.Begin,
+				end:   tok.End,
+				txt:   tok.Text,
+			}
+			p.Ass.Comments = append(p.Ass.Comments, n)
+		case ast.Ident:
+			a, err := p.parseStmt()
+			if err != nil {
+				perr = err
+				break END
+			}
+			p.Ass.Assignments = append(p.Ass.Assignments, a)
+		}
+	}
+	if perr != nil {
+		return nil, perr
+	}
+	return p.Ass, nil
 }
 
 func (p *Parser) parseStmt() (ast.AsignStmt, error) {
@@ -175,7 +218,22 @@ END:
 }
 
 func (p *Parser) contextHead() (ast.Node, error) {
-	return nil, nil
+	n := &node{}
+	begin := p.next()
+	name, err := p.parseIdent()
+	if err != nil {
+		return nil, err
+	}
+	end := p.next()
+	if end.Type != ast.RBrace {
+		return nil, fmt.Errorf(" %d: %depected [ got %s insed ", end.Line, end.Column, end.Text)
+	}
+	n.begin = begin.Begin
+	n.txt += begin.Text
+	n.txt += name.Text()
+	n.txt += end.Text
+	n.end = end.End
+	return n, nil
 }
 
 func (p *Parser) contextTemplates() ([]ast.Node, error) {
