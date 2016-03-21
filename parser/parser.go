@@ -226,7 +226,7 @@ func (p *Parser) contextHead() (ast.Node, error) {
 	}
 	end := p.next()
 	if end.Type != ast.RBrace {
-		return nil, fmt.Errorf(" %d: %depected [ got %s insed ", end.Line, end.Column, end.Text)
+		return nil, fmt.Errorf(" %d: %depected [ got %s instead ", end.Line, end.Column, end.Text)
 	}
 	n.begin = begin.Begin
 	n.txt += begin.Text
