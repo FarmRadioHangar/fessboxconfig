@@ -77,7 +77,7 @@ func (p *Parser) Parse() (*ast.File, error) {
 	return nil, nil
 }
 
-func (p *Parser) assignStmt() (ast.AsignStmt, error) {
+func (p *Parser) parseStmt() (ast.AsignStmt, error) {
 	a := ast.AsignStmt{}
 	var isLeft = true
 END:
@@ -87,7 +87,7 @@ END:
 		case ast.EOF:
 			break END
 		case ast.Ident:
-			n, err := p.assignIdent()
+			n, err := p.parseIdent()
 			if err != nil {
 				break END
 			}
@@ -117,7 +117,7 @@ END:
 	return a, nil
 }
 
-func (p *Parser) assignIdent() (ast.Node, error) {
+func (p *Parser) parseIdent() (ast.Node, error) {
 	n := &node{}
 	tok := p.next()
 	if tok.Type == ast.EOF {
@@ -163,7 +163,7 @@ END:
 			}
 			ctx.Comments = append(ctx.Comments, c)
 		case ast.Ident:
-			n, err := p.assignStmt()
+			n, err := p.parseStmt()
 			if err != nil {
 				break END
 			}
