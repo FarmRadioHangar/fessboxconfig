@@ -57,6 +57,9 @@ func NewParser(src io.Reader) (*Parser, error) {
 			break
 		}
 		if tok != nil {
+			if tok.Type == ast.WhiteSpace {
+				continue
+			}
 			toks = append(toks, tok)
 		}
 	}
