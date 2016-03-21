@@ -174,7 +174,6 @@ END:
 			ctx.Assignments = append(ctx.Assignments, n)
 		case ast.EOF:
 			break END
-			break END
 		}
 	}
 	return ctx, nil
