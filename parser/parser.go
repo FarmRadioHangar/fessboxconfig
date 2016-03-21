@@ -237,6 +237,51 @@ func (p *Parser) contextHead() (ast.Node, error) {
 }
 
 func (p *Parser) contextTemplates() ([]ast.Node, error) {
+	var rst []ast.Node
+	var perr error
+	begin := p.next()
+	if begin.Type != ast.LBracket {
+		return nil, fmt.Errorf(" %d: %depected ( got %s instead ", begin.Line, begin.Column, begin.Text)
+	}
+END:
+	for {
+		tok := p.next()
+		switch tok.Type {
+		case ast.Exclam:
+			n := &node{
+				begin: tok.Begin,
+				end:   tok.End,
+				txt:   tok.Text,
+			}
+			next := p.next()
+			if next.Type != ast.RBracket {
+				perr = fmt.Errorf(" %d: %depected ) got %s instead ", next.Line, next.Column, next.Text)
+				break END
+			}
+			rst = append(rst, n)
+			break END
+		case ast.Ident:
+			p.rewind()
+			i, err := p.parseIdent()
+			if err != nil {
+				perr = err
+				break END
+			}
+			rst = append(rst, i)
+		case ast.Comma:
+			i, err := p.parseIdent()
+			if err != nil {
+				perr = err
+				break END
+			}
+			rst = append(rst, i)
+		case ast.RBracket:
+			break END
+		}
+	}
+	if perr != nil {
+		return nil, perr
+	}
 	return nil, nil
 }
 
