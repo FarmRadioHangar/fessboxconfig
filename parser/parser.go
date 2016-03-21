@@ -97,7 +97,7 @@ END:
 			}
 			a.Right = append(a.Right, n)
 		case ast.Assign:
-			peek := p.next()
+			peek := p.peek()
 			n := &node{}
 			n.begin = tok.Begin
 			n.txt += tok.Text
@@ -105,8 +105,9 @@ END:
 			if peek.Type == ast.Greater {
 				n.txt += peek.Text
 				n.end = peek.End
-			} else {
-				p.rewind()
+
+				// advance current position to cover the next token
+				p.currPos++
 			}
 			a.Equal = n
 			isLeft = false
@@ -141,7 +142,7 @@ func (p *Parser) context() (ast.Context, error) {
 	ctx := ast.Context{}
 END:
 	for {
-		tok := p.next()
+		tok := p.peek()
 		switch tok.Type {
 		case ast.LBrace:
 			n, err := p.contextHead()
