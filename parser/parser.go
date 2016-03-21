@@ -203,3 +203,12 @@ func (p *Parser) seek(at int) {
 func (p *Parser) rewind() {
 	p.currPos--
 }
+
+// Returns the next tokken without updating the current position. This is one
+// step look ahead.
+func (p *Parser) peek() *ast.Token {
+	if p.currPos >= len(p.tokens)-1 {
+		return &ast.Token{Type: ast.EOF}
+	}
+	return p.tokens[p.currPos]
+}
