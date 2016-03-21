@@ -57,16 +57,7 @@ func NewParser(src io.Reader) (*Parser, error) {
 			break
 		}
 		if tok != nil {
-			switch tok.Type {
-			case ast.WhiteSpace, ast.Comment:
-
-				// Skip comments and whitespaces but preserve the newlines to aid in
-				// parsing
-				continue
-			default:
-				toks = append(toks, tok)
-			}
-
+			toks = append(toks, tok)
 		}
 	}
 	return &Parser{tokens: toks, Ass: &ast.File{}}, nil
