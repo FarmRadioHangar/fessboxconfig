@@ -1,0 +1,25 @@
+{
+  "name": "fessboxconfig",
+  "version": "1.0.0",
+  "description": "frontend configuration for fessbox and *asterisk",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/FarmRadioHangar/fessboxconfig.git"
+  },
+  "keywords": [
+    "golang",
+    "reactjs",
+    "javascript",
+    "go"
+  ],
+  "author": "FarmRadioHangar",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/FarmRadioHangar/fessboxconfig/issues"
+  },
+  "homepage": "https://github.com/FarmRadioHangar/fessboxconfig#readme"
+}
