@@ -10,6 +10,11 @@ var config = {
     path: BUILD_DIR,
     filename: 'bundle.js'
   },
+  resolve: {
+    root: [
+      path.resolve('./node_modules'),
+    ]
+  },
   module : {
     loaders : [
       {
@@ -18,6 +23,7 @@ var config = {
         loader : 'babel'
       }
     ]
+  }
 };
 
 module.exports = config;
