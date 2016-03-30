@@ -92,6 +92,7 @@ END:
 			}
 			p.Ass.Contexts = append(p.Ass.Contexts, ctx)
 		case ast.Comment:
+			fmt.Println(peek.Text)
 			tok := p.next()
 			n := &node{
 				begin: tok.Begin,
@@ -106,6 +107,8 @@ END:
 				break END
 			}
 			p.Ass.Assignments = append(p.Ass.Assignments, a)
+		case ast.NLine:
+			_ = p.next()
 		}
 	}
 	if perr != nil {
