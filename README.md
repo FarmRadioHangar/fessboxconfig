@@ -3,7 +3,7 @@ Configuration manager for fessbox
 
 # checklist
 
-- [WIP]  JSON API to work with the files
+- [ ]  JSON API to work with the files
 - [x] Asterisk configuration format
   - [x] context
   - [x] options
@@ -13,7 +13,7 @@ Configuration manager for fessbox
   - [x] comments
     - [x] single line comments
     - [x] block comments
-- [WIP] Device autodetection
+- [ ] Device autodetection
 
 
 
