@@ -1,10 +1,5 @@
-# go-asterisk-config
-
-Is a configuration manager for asterisk. It provides a simple JSON API for
-reading and configuring asterisk configuration files.
-
-Asterisk configuration files are located in `/etc/asterisk`.This application is
-a full implementation for managing that directory.
+# fessboxconfig
+Configuration manager for fessbox
 
 # checklist
 
@@ -18,8 +13,9 @@ a full implementation for managing that directory.
   - [x] comments
     - [x] single line comments
     - [x] block comments
+- [WIP] Device autodetection
 
-- [TODO] Dial plan
+
 
 # Links
 - [asterisk](http://www.asterisk.org/)
