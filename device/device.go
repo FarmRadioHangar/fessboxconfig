@@ -8,6 +8,7 @@ import (
 
 type Manager struct {
 	devices map[string]serial.Config
+	conn    []*Conn
 	mu      sync.RWMutex
 }
 
