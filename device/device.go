@@ -6,6 +6,16 @@ import (
 	"github.com/tarm/serial"
 )
 
+// Manager manages devices that are plugged into the system. It supports auto
+// detection of devices.
+//
+// Serial ports are opened each for a device, and a clean API for communicating
+// is provided via Read, Write and Flush methods.
+//
+// The devices are monitored via udev, and any changes that requires reloading
+// of the  ports are handled by reloading the ports to the devices.
+//
+// This is safe to use concurrently in multiple goroutines
 type Manager struct {
 	devices map[string]serial.Config
 	conn    []*Conn
