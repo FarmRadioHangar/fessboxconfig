@@ -28,7 +28,7 @@ You need a working Golang environment
 
 First install
 ```bash
-go get github.com/FarmRadioHangar/fessboxconfig/...
+go get github.com/FarmRadioHangar/fessboxconfig
 ```
 
 
