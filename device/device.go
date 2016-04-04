@@ -1,9 +1,29 @@
 package device
 
-import "github.com/tarm/serial"
+import (
+	"sync"
+
+	"github.com/tarm/serial"
+)
 
 type Manager struct {
 	devices map[string]serial.Config
+	mu      sync.RWMutex
+}
+
+func (m *Manager) AddDevice(name string) error {
+	cfg := serial.Config{Name: name}
+	m.mu.Lock()
+	m.devices[name] = cfg
+	m.mu.Unlock()
+	return nil
+}
+
+func (m *Manager) RemoveDevice(name string) error {
+	m.mu.RLock()
+	delete(m.devices, name)
+	m.mu.RUnlock()
+	return nil
 }
 
 type Conn struct {
