@@ -22,6 +22,7 @@ type Manager struct {
 	mu      sync.RWMutex
 }
 
+// AddDevice adds device name to the manager
 func (m *Manager) AddDevice(name string) error {
 	cfg := serial.Config{Name: name}
 	m.mu.Lock()
@@ -30,6 +31,7 @@ func (m *Manager) AddDevice(name string) error {
 	return nil
 }
 
+// RemoveDevice removes device name from the manager
 func (m *Manager) RemoveDevice(name string) error {
 	m.mu.RLock()
 	delete(m.devices, name)
