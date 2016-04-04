@@ -21,3 +21,11 @@ func (c *Conn) Open() error {
 	c.isOpen = true
 	return nil
 }
+
+// Close closes the port helt by *Conn.
+func (c *Conn) Close() error {
+	if c.isOpen {
+		return c.port.Close()
+	}
+	return nil
+}
