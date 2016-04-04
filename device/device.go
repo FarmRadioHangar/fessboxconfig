@@ -39,12 +39,14 @@ func (m *Manager) RemoveDevice(name string) error {
 	return nil
 }
 
+// Conn is a device serial connection
 type Conn struct {
 	device serial.Config
 	port   *serial.Port
 	isOpen bool
 }
 
+// Open opens a serial port to the undelying device
 func (c *Conn) Open() error {
 	p, err := serial.OpenPort(&c.device)
 	if err != nil {
