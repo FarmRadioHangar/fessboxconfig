@@ -1,8 +1,10 @@
 package device
 
 import (
+	"fmt"
 	"sync"
 
+	"github.com/jochenvg/go-udev"
 	"github.com/tarm/serial"
 )
 
@@ -20,6 +22,40 @@ type Manager struct {
 	devices map[string]serial.Config
 	conn    []*Conn
 	mu      sync.RWMutex
+	monitor *udev.Monitor
+	done    chan struct{}
+	stop    chan struct{}
+}
+
+func (m *Manager) Init() {
+	u := udev.Udev{}
+	monitor := u.NewMonitorFromNetlink("udev")
+	devCh, err := monitor.DeviceChan(m.done)
+	if err != nil {
+		panic(err)
+	}
+	m.monitor = monitor
+	go func() {
+	stop:
+		for {
+			select {
+			case d := <-devCh:
+				switch d.Action() {
+				case "add":
+					fmt.Printf(" new device added ad %s\n", d.Devpath())
+					m.AddDevice(d.Devpath())
+				case "remove":
+					fmt.Printf(" %s was removed\n", d.Devpath())
+					m.RemoveDevice(d.Devpath())
+				default:
+					fmt.Println(d.Action())
+				}
+			case quit := <-m.stop:
+				m.done <- quit
+				break stop
+			}
+		}
+	}()
 }
 
 // AddDevice adds device name to the manager
