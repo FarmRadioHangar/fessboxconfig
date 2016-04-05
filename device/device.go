@@ -103,11 +103,11 @@ func (m *Manager) releaseAllPorts() {
 func (m *Manager) reload() {
 	m.releaseAllPorts()
 	var conns []*Conn
-	for _, v := range m.devises {
+	for _, v := range m.devices {
 		conn := &Conn{device: v}
 		err := conn.Open()
 		if err != nil {
-			log.Printf("[ERR] closing port %s %v\n", c.device.Name, err)
+			log.Printf("[ERR] closing port %s %v\n", v.Name, err)
 		}
 	}
 	m.conn = conns
