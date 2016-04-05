@@ -27,6 +27,7 @@ type Manager struct {
 	stop    chan struct{}
 }
 
+// New returns a new Manager instance
 func New() *Manager {
 	return &Manager{
 		devices: make(map[string]serial.Config),
@@ -35,6 +36,11 @@ func New() *Manager {
 	}
 }
 
+// Init initializes the manager. This involves creating a new goroutine to watch
+// over the changes detected by udev for any device interaction with the system.
+//
+// The only interesting device actions are add and reomove for adding and
+// removing devices respctively.
 func (m *Manager) Init() {
 	u := udev.Udev{}
 	monitor := u.NewMonitorFromNetlink("udev")
@@ -83,6 +89,8 @@ func (m *Manager) RemoveDevice(name string) error {
 	return nil
 }
 
+//Close shuts down the device manager. This makes sure the udev monitor is
+//closed and all goroutines are properly exited.
 func (m *Manager) Close() {
 	m.stop <- struct{}{}
 }
