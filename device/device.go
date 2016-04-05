@@ -2,6 +2,7 @@ package device
 
 import (
 	"fmt"
+	"log"
 	"sync"
 
 	"github.com/jochenvg/go-udev"
@@ -87,6 +88,29 @@ func (m *Manager) RemoveDevice(name string) error {
 	delete(m.devices, name)
 	m.mu.RUnlock()
 	return nil
+}
+
+// close all ports that are open for the devices
+func (m *Manager) releaseAllPorts() {
+	for _, c := range m.conn {
+		err := c.Close()
+		if err != nil {
+			log.Printf("[ERR] closing port %s %v\n", c.device.Name, err)
+		}
+	}
+}
+
+func (m *Manager) reload() {
+	m.releaseAllPorts()
+	var conns []*Conn
+	for _, v := range m.devises {
+		conn := &Conn{device: v}
+		err := conn.Open()
+		if err != nil {
+			log.Printf("[ERR] closing port %s %v\n", c.device.Name, err)
+		}
+	}
+	m.conn = conns
 }
 
 //Close shuts down the device manager. This makes sure the udev monitor is
