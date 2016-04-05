@@ -25,6 +25,10 @@
 			"Rev": "13a9632a960f89c1b5348d87fcd9edd9d047c7bd"
 		},
 		{
+			"ImportPath": "github.com/tarm/serial",
+			"Rev": "a53c419ae7ba5705d100024728f5254b81dd73e9"
+		},
+		{
 			"ImportPath": "golang.org/x/sys/unix",
 			"Rev": "86171c1650b9e3c8b49bd42a081f684ea8524b3a"
 		},
