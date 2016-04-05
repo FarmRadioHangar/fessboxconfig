@@ -14,6 +14,7 @@ import (
 	"path/filepath"
 	"syscall"
 
+	"github.com/FarmRadioHangar/fessboxconfig/device"
 	"github.com/FarmRadioHangar/fessboxconfig/parser"
 	"github.com/gernest/hot"
 	"github.com/gorilla/mux"
@@ -51,6 +52,8 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	manager := device.New()
+	manager.Init()
 	if *dev {
 		cfg.AsteriskConfig = "sample"
 		tmp, err := ioutil.TempDir("", "fconf")
@@ -66,6 +69,7 @@ func main() {
 				case <-c:
 					log.Println("removing ", dir)
 					_ = os.RemoveAll(dir)
+					manager.Close()
 					break END
 				}
 			}

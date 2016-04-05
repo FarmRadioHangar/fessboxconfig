@@ -27,6 +27,14 @@ type Manager struct {
 	stop    chan struct{}
 }
 
+func New() *Manager {
+	return &Manager{
+		devices: make(map[string]serial.Config),
+		done:    make(chan struct{}),
+		stop:    make(chan struct{}),
+	}
+}
+
 func (m *Manager) Init() {
 	u := udev.Udev{}
 	monitor := u.NewMonitorFromNetlink("udev")
@@ -73,6 +81,10 @@ func (m *Manager) RemoveDevice(name string) error {
 	delete(m.devices, name)
 	m.mu.RUnlock()
 	return nil
+}
+
+func (m *Manager) Close() {
+	m.stop <- struct{}{}
 }
 
 // Conn is a device serial connection
