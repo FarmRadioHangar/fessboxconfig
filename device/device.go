@@ -2,6 +2,7 @@ package device
 
 import (
 	"fmt"
+	"io/ioutil"
 	"log"
 	"sync"
 
@@ -155,4 +156,25 @@ func (c *Conn) Write(b []byte) (int, error) {
 // Read reads from serial port
 func (c *Conn) Read(b []byte) (int, error) {
 	return c.port.Read(b)
+}
+
+// Exec sends the command over serial port and rrturns the response. If the port
+// is closed it is opened  before sending the command.
+func (c *Conn) Exec(cmd string) ([]byte, error) {
+	if !c.isOpen {
+		err := c.Open()
+		if err != nil {
+			return nil, err
+		}
+	}
+	defer func() { _ = c.port.Flush() }()
+	_, err := c.Write([]byte(cmd))
+	if err != nil {
+		return nil, err
+	}
+	b, err := ioutil.ReadAll(c)
+	if err != nil {
+		return nil, err
+	}
+	return b, nil
 }
