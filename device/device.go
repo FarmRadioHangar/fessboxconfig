@@ -62,9 +62,11 @@ func (m *Manager) Init() {
 					m.AddDevice(d.Devpath())
 					prop := d.Properties()
 					fmt.Printf(" new device added  %s\n", prop["ID_SERIAL"])
+					m.reload()
 				case "remove":
 					fmt.Printf(" %s was removed\n", d.Devpath())
 					m.RemoveDevice(d.Devpath())
+					m.reload()
 				default:
 					fmt.Println(d.Action())
 				}
