@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"path/filepath"
+	"strings"
 	"sync"
 
 	"github.com/jochenvg/go-udev"
@@ -110,9 +112,16 @@ func (m *Manager) reload() {
 	var conns []*Conn
 	for _, v := range m.devices {
 		conn := &Conn{device: v}
-		err := conn.Open()
-		if err != nil {
-			log.Printf("[ERR] closing port %s %v\n", v.Name, err)
+		dname := filepath.Base(v.Name)
+		if strings.HasPrefix(dname, "ttyUSB") {
+			imei, err := conn.Exec("AT+GSN")
+			if err != nil {
+				log.Printf("[ERR] closing port %s %v\n", v.Name, err)
+				_ = conn.Close()
+				continue
+			}
+			fmt.Printf(" EMI %s \n", string(imei))
+			conns = append(conns, conn)
 		}
 	}
 	m.conn = conns
