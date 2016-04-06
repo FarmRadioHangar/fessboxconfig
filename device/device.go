@@ -146,3 +146,8 @@ func (c *Conn) Close() error {
 	}
 	return nil
 }
+
+// Write wites b to the serieal port
+func (c *Conn) Write(b []byte) (int, error) {
+	return c.port.Write(b)
+}
