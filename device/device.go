@@ -45,6 +45,7 @@ func New() *Manager {
 func (m *Manager) Init() {
 	u := udev.Udev{}
 	monitor := u.NewMonitorFromNetlink("udev")
+	monitor.FilterAddMatchTag("systemd")
 	devCh, err := monitor.DeviceChan(m.done)
 	if err != nil {
 		panic(err)
@@ -57,8 +58,9 @@ func (m *Manager) Init() {
 			case d := <-devCh:
 				switch d.Action() {
 				case "add":
-					fmt.Printf(" new device added ad %s\n", d.Devpath())
 					m.AddDevice(d.Devpath())
+					prop := d.Properties()
+					fmt.Printf(" new device added  %s\n", prop["ID_SERIAL"])
 				case "remove":
 					fmt.Printf(" %s was removed\n", d.Devpath())
 					m.RemoveDevice(d.Devpath())
