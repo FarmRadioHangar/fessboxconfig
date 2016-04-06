@@ -144,7 +144,7 @@ type Conn struct {
 func (c *Conn) Open() error {
 	p, err := serial.OpenPort(&c.device)
 	if err != nil {
-		return nil
+		return err
 	}
 	c.port = p
 	c.isOpen = true
