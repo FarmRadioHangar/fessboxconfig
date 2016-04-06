@@ -2,11 +2,10 @@ package device
 
 import (
 	"fmt"
-	"io/ioutil"
 	"log"
 	"path/filepath"
-	"strings"
 	"sync"
+	"time"
 
 	"github.com/jochenvg/go-udev"
 	"github.com/tarm/serial"
@@ -61,13 +60,14 @@ func (m *Manager) Init() {
 			case d := <-devCh:
 				switch d.Action() {
 				case "add":
-					m.AddDevice(d.Devpath())
-					prop := d.Properties()
-					fmt.Printf(" new device added  %s\n", prop["ID_SERIAL"])
+					dpath := filepath.Join("/dev", filepath.Base(d.Devpath()))
+					m.AddDevice(dpath)
+					fmt.Printf(" new device added  %s\n", dpath)
 					m.reload()
 				case "remove":
-					fmt.Printf(" %s was removed\n", d.Devpath())
-					m.RemoveDevice(d.Devpath())
+					dpath := filepath.Join("/dev", filepath.Base(d.Devpath()))
+					fmt.Printf(" %s was removed\n", dpath)
+					m.RemoveDevice(dpath)
 					m.reload()
 				default:
 					fmt.Println(d.Action())
@@ -82,7 +82,7 @@ func (m *Manager) Init() {
 
 // AddDevice adds device name to the manager
 func (m *Manager) AddDevice(name string) error {
-	cfg := serial.Config{Name: name, Baud: 115200}
+	cfg := serial.Config{Name: name, Baud: 115200, ReadTimeout: time.Second}
 	m.mu.Lock()
 	m.devices[name] = cfg
 	m.mu.Unlock()
@@ -112,17 +112,14 @@ func (m *Manager) reload() {
 	var conns []*Conn
 	for _, v := range m.devices {
 		conn := &Conn{device: v}
-		dname := filepath.Base(v.Name)
-		if strings.HasPrefix(dname, "ttyUSB") {
-			imei, err := conn.Exec("AT+GSN")
-			if err != nil {
-				log.Printf("[ERR] closing port %s %v\n", v.Name, err)
-				_ = conn.Close()
-				continue
-			}
-			fmt.Printf(" EMI %s \n", string(imei))
-			conns = append(conns, conn)
+		imei, err := conn.Exec("AT+GSN \n\r")
+		if err != nil {
+			log.Printf("[ERR] closing port %s %v\n", v.Name, err)
+			_ = conn.Close()
+			continue
 		}
+		fmt.Printf(" EMI %s \n", string(imei))
+		conns = append(conns, conn)
 	}
 	m.conn = conns
 }
@@ -173,6 +170,7 @@ func (c *Conn) Read(b []byte) (int, error) {
 // is closed it is opened  before sending the command.
 func (c *Conn) Exec(cmd string) ([]byte, error) {
 	if !c.isOpen {
+		fmt.Println("Opening port")
 		err := c.Open()
 		if err != nil {
 			return nil, err
@@ -183,9 +181,13 @@ func (c *Conn) Exec(cmd string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	b, err := ioutil.ReadAll(c)
+	fmt.Println("done writing")
+	fmt.Println("READING")
+	buf := make([]byte, 128)
+	_, err = c.Read(buf)
 	if err != nil {
 		return nil, err
 	}
-	return b, nil
+	fmt.Println("done reading")
+	return buf, nil
 }
