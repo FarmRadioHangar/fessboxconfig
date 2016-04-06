@@ -151,3 +151,8 @@ func (c *Conn) Close() error {
 func (c *Conn) Write(b []byte) (int, error) {
 	return c.port.Write(b)
 }
+
+// Read reads from serial port
+func (c *Conn) Read(b []byte) (int, error) {
+	return c.port.Read(b)
+}
