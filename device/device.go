@@ -82,7 +82,7 @@ func (m *Manager) Init() {
 
 // AddDevice adds device name to the manager
 func (m *Manager) AddDevice(name string) error {
-	cfg := serial.Config{Name: name, Baud: 115200, ReadTimeout: time.Second}
+	cfg := serial.Config{Name: name, Baud: 9600, ReadTimeout: time.Second}
 	m.mu.Lock()
 	m.devices[name] = cfg
 	m.mu.Unlock()
