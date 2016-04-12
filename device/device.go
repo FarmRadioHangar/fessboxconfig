@@ -119,7 +119,7 @@ func (m *Manager) reload() {
 	var conns []*Conn
 	for _, v := range m.devices {
 		conn := &Conn{device: v}
-		imei, err := conn.Exec("AT+GSN \r")
+		imei, err := conn.Run(modemCommands.IMEI)
 		if err != nil {
 			log.Printf("[ERR] closing port %s %v\n", v.Name, err)
 			_ = conn.Close()
