@@ -199,3 +199,8 @@ func (c *Conn) Exec(cmd string) ([]byte, error) {
 	}
 	return []byte(line), nil
 }
+
+// Run helper for Exec that adds \r to the command
+func (c *Conn) Run(cmd string) ([]byte, error) {
+	return c.Exec(fmt.Sprintf("%s \r", cmd))
+}
