@@ -1,6 +1,7 @@
 package device
 
 import (
+	"bufio"
 	"fmt"
 	"log"
 	"path/filepath"
@@ -181,13 +182,14 @@ func (c *Conn) Exec(cmd string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println("done writing")
-	fmt.Println("READING")
-	buf := make([]byte, 128)
-	_, err = c.Read(buf)
+	buf := bufio.NewReader(c)
+	line, err := buf.ReadString('\n')
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println("done reading")
-	return buf, nil
+	line, err = buf.ReadString('\n')
+	if err != nil {
+		return nil, err
+	}
+	return []byte(line), nil
 }
