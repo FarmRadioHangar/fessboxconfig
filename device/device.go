@@ -12,6 +12,12 @@ import (
 	"github.com/tarm/serial"
 )
 
+var modemCommands = struct {
+	IMEI, IMSI string
+}{
+	"AT+GSN", "AT+CIMI",
+}
+
 // Manager manages devices that are plugged into the system. It supports auto
 // detection of devices.
 //
