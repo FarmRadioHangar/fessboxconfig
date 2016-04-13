@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"net/http"
 	"path/filepath"
 	"sync"
 	"time"
@@ -95,6 +96,12 @@ func (m *Manager) AddDevice(name string) error {
 	m.devices[name] = cfg
 	m.mu.Unlock()
 	return nil
+}
+
+// List serves the list of current devices. The list wont cover all devices ,
+// only the significant ones( modems for now)
+func (m *Manager) List(w http.ResponseWriter, r *http.Request) {
+
 }
 
 // RemoveDevice removes device name from the manager

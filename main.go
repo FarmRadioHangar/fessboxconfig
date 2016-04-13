@@ -81,6 +81,7 @@ func main() {
 		}
 	}
 	s := newServer(cfg)
+	s.HandleFunc("/serial/list", manager.List).Methods("GET")
 	log.Printf(" starting server on  localhost:%d\n", cfg.Port)
 	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", cfg.Port), s))
 }
@@ -110,7 +111,7 @@ func copyFiles(dst, src string) error {
 
 //newServer returns a http.Handler with all the routes for configuring supported
 //devices registered.
-func newServer(c *Config) http.Handler {
+func newServer(c *Config) *mux.Router {
 	s := mux.NewRouter()
 	w := newWeb(c)
 	s.HandleFunc("/config/{filename}", w.Dongle).Methods("GET")
