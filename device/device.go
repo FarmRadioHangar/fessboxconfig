@@ -2,6 +2,7 @@ package device
 
 import (
 	"bytes"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"log"
@@ -101,7 +102,17 @@ func (m *Manager) AddDevice(name string) error {
 // List serves the list of current devices. The list wont cover all devices ,
 // only the significant ones( modems for now)
 func (m *Manager) List(w http.ResponseWriter, r *http.Request) {
+	data := make(map[string]interface{})
+	for i := 0; i < len(m.conn); i++ {
+		c := m.conn[i]
+		data[c.device.Name] = c.imei
+	}
+	json.NewEncoder(w).Encode(data)
+	w.Header().Set("Content-Type", "application/json")
+}
 
+// RunComand runs commands to the exposed devices over serial ports
+func (m *Manager) RunCommand(w http.ResponseWriter, r *http.Request) {
 }
 
 // RemoveDevice removes device name from the manager
