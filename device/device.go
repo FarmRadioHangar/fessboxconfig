@@ -122,17 +122,27 @@ func (m *Manager) reload() {
 		conn := &Conn{device: v}
 		imei, err := conn.Run(modemCommands.IMEI)
 		if err != nil {
-			log.Printf("[ERR] closing port %s %v\n", v.Name, err)
 			_ = conn.Close()
 			continue
 		}
-		fmt.Printf(" EMEI %s \n", string(imei))
+		i, err := cleanIMEI(imei)
+		if err != nil {
+			_ = conn.Close()
+			continue
+		}
+		fmt.Println("IMEI ", string(i))
 		conns = append(conns, conn)
 	}
 	m.conn = conns
 }
 
-func cleanIMEI(src []byte) []byte {
+func cleanIMEI(src []byte) ([]byte, error) {
+	i := bytes.Index(src, []byte("OK"))
+	if i == -1 {
+		return nil, errors.New("not okay")
+	}
+	ns := bytes.TrimSpace(src[:i])
+	return ns, nil
 }
 
 //Close shuts down the device manager. This makes sure the udev monitor is
