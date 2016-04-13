@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"log"
 	"net/http"
 	"path/filepath"
 	"sync"
@@ -33,6 +32,7 @@ var modemCommands = struct {
 // This is safe to use concurrently in multiple goroutines
 type Manager struct {
 	devices map[string]serial.Config
+	modems  map[string]*Conn
 	conn    []*Conn
 	mu      sync.RWMutex
 	monitor *udev.Monitor
@@ -44,6 +44,7 @@ type Manager struct {
 func New() *Manager {
 	return &Manager{
 		devices: make(map[string]serial.Config),
+		modems:  make(map[string]*Conn),
 		done:    make(chan struct{}),
 		stop:    make(chan struct{}),
 	}
@@ -68,19 +69,14 @@ func (m *Manager) Init() {
 		for {
 			select {
 			case d := <-devCh:
+				dpath := filepath.Join("/dev", filepath.Base(d.Devpath()))
 				switch d.Action() {
 				case "add":
-					dpath := filepath.Join("/dev", filepath.Base(d.Devpath()))
 					m.AddDevice(dpath)
-					fmt.Printf(" new device added  %s\n", dpath)
 					m.reload()
 				case "remove":
-					dpath := filepath.Join("/dev", filepath.Base(d.Devpath()))
-					fmt.Printf(" %s was removed\n", dpath)
 					m.RemoveDevice(dpath)
 					m.reload()
-				default:
-					fmt.Println(d.Action())
 				}
 			case quit := <-m.stop:
 				m.done <- quit
@@ -103,9 +99,8 @@ func (m *Manager) AddDevice(name string) error {
 // only the significant ones( modems for now)
 func (m *Manager) List(w http.ResponseWriter, r *http.Request) {
 	data := make(map[string]interface{})
-	for i := 0; i < len(m.conn); i++ {
-		c := m.conn[i]
-		data[c.device.Name] = c.imei
+	for imei, c := range m.modems {
+		data[imei] = c.device.Name
 	}
 	json.NewEncoder(w).Encode(data)
 	w.Header().Set("Content-Type", "application/json")
@@ -140,19 +135,7 @@ func (m *Manager) Exec(name string, cmds string, isIMEI bool) ([]byte, error) {
 	return nil, errors.New("no device found")
 }
 
-// close all ports that are open for the devices
-func (m *Manager) releaseAllPorts() {
-	for _, c := range m.conn {
-		err := c.Close()
-		if err != nil {
-			log.Printf("[ERR] closing port %s %v\n", c.device.Name, err)
-		}
-	}
-}
-
 func (m *Manager) reload() {
-	m.releaseAllPorts()
-	var conns []*Conn
 	for _, v := range m.devices {
 		conn := &Conn{device: v}
 		imei, err := conn.Run(modemCommands.IMEI)
@@ -166,9 +149,9 @@ func (m *Manager) reload() {
 			continue
 		}
 		conn.imei = string(i)
-		conns = append(conns, conn)
+		fmt.Println(conn.imei, " ", conn.device.Name)
+		m.modems[conn.imei] = conn
 	}
-	m.conn = conns
 }
 
 func cleanIMEI(src []byte) ([]byte, error) {
@@ -227,13 +210,16 @@ func (c *Conn) Read(b []byte) (int, error) {
 // is closed it is opened  before sending the command.
 func (c *Conn) Exec(cmd string) ([]byte, error) {
 	if !c.isOpen {
-		fmt.Println("Opening port")
 		err := c.Open()
 		if err != nil {
 			return nil, err
 		}
 	}
-	defer func() { _ = c.port.Flush() }()
+	defer func() {
+		_ = c.port.Flush()
+		_ = c.port.Close()
+		c.isOpen = false
+	}()
 	_, err := c.Write([]byte(cmd))
 	if err != nil {
 		return nil, err
