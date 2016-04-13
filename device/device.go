@@ -1,7 +1,8 @@
 package device
 
 import (
-	"bufio"
+	"bytes"
+	"errors"
 	"fmt"
 	"log"
 	"path/filepath"
@@ -131,6 +132,9 @@ func (m *Manager) reload() {
 	m.conn = conns
 }
 
+func cleanIMEI(src []byte) []byte {
+}
+
 //Close shuts down the device manager. This makes sure the udev monitor is
 //closed and all goroutines are properly exited.
 func (m *Manager) Close() {
@@ -188,16 +192,15 @@ func (c *Conn) Exec(cmd string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	buf := bufio.NewReader(c)
-	line, err := buf.ReadString('\n')
+	buf := make([]byte, 128)
+	_, err = c.Read(buf)
 	if err != nil {
 		return nil, err
 	}
-	line, err = buf.ReadString('\n')
-	if err != nil {
-		return nil, err
+	if !bytes.Contains(buf, []byte("OK")) {
+		return nil, errors.New(" not Okay")
 	}
-	return []byte(line), nil
+	return buf, nil
 }
 
 // Run helper for Exec that adds \r to the command
