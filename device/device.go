@@ -105,6 +105,23 @@ func (m *Manager) RemoveDevice(name string) error {
 	return nil
 }
 
+// Exec executes command over serial port for devices which have open ports
+func (m *Manager) Exec(name string, cmds string, isIMEI bool) ([]byte, error) {
+	for i := 0; i < len(m.conn); i++ {
+		c := m.conn[i]
+		if isIMEI {
+			if c.imei != name {
+				continue
+			}
+		}
+		if c.device.Name != name {
+			continue
+		}
+		return c.Run(cmds)
+	}
+	return nil, errors.New("no device found")
+}
+
 // close all ports that are open for the devices
 func (m *Manager) releaseAllPorts() {
 	for _, c := range m.conn {
@@ -130,7 +147,7 @@ func (m *Manager) reload() {
 			_ = conn.Close()
 			continue
 		}
-		fmt.Println("IMEI ", string(i))
+		conn.imei = string(i)
 		conns = append(conns, conn)
 	}
 	m.conn = conns
@@ -154,6 +171,7 @@ func (m *Manager) Close() {
 // Conn is a device serial connection
 type Conn struct {
 	device serial.Config
+	imei   string
 	port   *serial.Port
 	isOpen bool
 }
