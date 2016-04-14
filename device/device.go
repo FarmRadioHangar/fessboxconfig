@@ -32,7 +32,7 @@ var modemCommands = struct {
 // This is safe to use concurrently in multiple goroutines
 type Manager struct {
 	devices map[string]serial.Config
-	modems  map[string]*Conn
+	modems  map[string]*Modem
 	mu      sync.RWMutex
 	monitor *udev.Monitor
 	done    chan struct{}
@@ -43,7 +43,7 @@ type Manager struct {
 func New() *Manager {
 	return &Manager{
 		devices: make(map[string]serial.Config),
-		modems:  make(map[string]*Conn),
+		modems:  make(map[string]*Modem),
 		done:    make(chan struct{}),
 		stop:    make(chan struct{}),
 	}
@@ -99,7 +99,7 @@ func (m *Manager) AddDevice(name string) error {
 func (m *Manager) List(w http.ResponseWriter, r *http.Request) {
 	data := make(map[string]interface{})
 	for imei, c := range m.modems {
-		data[imei] = c.device.Name
+		data[imei] = c
 	}
 	json.NewEncoder(w).Encode(data)
 	w.Header().Set("Content-Type", "application/json")
@@ -117,20 +117,46 @@ func (m *Manager) RemoveDevice(name string) error {
 	return nil
 }
 
+type Modem struct {
+	IMEI         string `json:"imei"`
+	IMSI         string `json:"imsi"`
+	Manufacturer string `json:"manufacturer"`
+	conn         *Conn
+}
+
+func newModem(c *Conn) (*Modem, error) {
+	m := &Modem{}
+	imei, err := c.Run(modemCommands.IMEI)
+	if err != nil {
+		return nil, err
+	}
+	i, err := cleanResult(imei)
+	if err != nil {
+		return nil, err
+	}
+	m.IMEI = string(i)
+	imsi, err := c.Run("AT+CIMI")
+	if err != nil {
+		return nil, err
+	}
+	s, err := cleanResult(imsi)
+	if err != nil {
+		return nil, err
+	}
+	m.IMSI = string(s)
+	m.conn = c
+	return m, nil
+}
+
 func (m *Manager) reload() {
 	for _, v := range m.devices {
 		conn := &Conn{device: v}
-		imei, err := conn.Run(modemCommands.IMEI)
+		modem, err := newModem(conn)
 		if err != nil {
 			continue
 		}
-		i, err := cleanResult(imei)
-		if err != nil {
-			continue
-		}
-		conn.imei = string(i)
-		fmt.Println(conn.imei, " ", conn.device.Name)
-		m.modems[conn.imei] = conn
+		fmt.Println(modem.IMEI, " ", modem.IMSI)
+		m.modems[modem.IMEI] = modem
 	}
 }
 
@@ -195,11 +221,6 @@ func (c *Conn) Exec(cmd string) ([]byte, error) {
 			return nil, err
 		}
 	}
-	defer func() {
-		_ = c.port.Flush()
-		_ = c.port.Close()
-		c.isOpen = false
-	}()
 	_, err := c.Write([]byte(cmd))
 	if err != nil {
 		return nil, err
@@ -210,8 +231,11 @@ func (c *Conn) Exec(cmd string) ([]byte, error) {
 		return nil, err
 	}
 	if !bytes.Contains(buf, []byte("OK")) {
-		return nil, errors.New(" not Okay")
+		return nil, errors.New("command " + string(cmd) + " xeite without OK" + " got " + string(buf))
 	}
+	_ = c.port.Flush()
+	_ = c.port.Close()
+	c.isOpen = false
 	return buf, nil
 }
 
