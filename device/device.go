@@ -125,7 +125,7 @@ func (m *Manager) reload() {
 			_ = conn.Close()
 			continue
 		}
-		i, err := cleanIMEI(imei)
+		i, err := cleanResult(imei)
 		if err != nil {
 			_ = conn.Close()
 			continue
@@ -136,7 +136,7 @@ func (m *Manager) reload() {
 	}
 }
 
-func cleanIMEI(src []byte) ([]byte, error) {
+func cleanResult(src []byte) ([]byte, error) {
 	i := bytes.Index(src, []byte("OK"))
 	if i == -1 {
 		return nil, errors.New("not okay")
