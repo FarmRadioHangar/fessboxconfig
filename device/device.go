@@ -33,7 +33,6 @@ var modemCommands = struct {
 type Manager struct {
 	devices map[string]serial.Config
 	modems  map[string]*Conn
-	conn    []*Conn
 	mu      sync.RWMutex
 	monitor *udev.Monitor
 	done    chan struct{}
@@ -116,23 +115,6 @@ func (m *Manager) RemoveDevice(name string) error {
 	delete(m.devices, name)
 	m.mu.RUnlock()
 	return nil
-}
-
-// Exec executes command over serial port for devices which have open ports
-func (m *Manager) Exec(name string, cmds string, isIMEI bool) ([]byte, error) {
-	for i := 0; i < len(m.conn); i++ {
-		c := m.conn[i]
-		if isIMEI {
-			if c.imei != name {
-				continue
-			}
-		}
-		if c.device.Name != name {
-			continue
-		}
-		return c.Run(cmds)
-	}
-	return nil, errors.New("no device found")
 }
 
 func (m *Manager) reload() {
