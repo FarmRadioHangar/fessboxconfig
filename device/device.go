@@ -122,12 +122,10 @@ func (m *Manager) reload() {
 		conn := &Conn{device: v}
 		imei, err := conn.Run(modemCommands.IMEI)
 		if err != nil {
-			_ = conn.Close()
 			continue
 		}
 		i, err := cleanResult(imei)
 		if err != nil {
-			_ = conn.Close()
 			continue
 		}
 		conn.imei = string(i)
