@@ -9,6 +9,8 @@ import (
 	"path/filepath"
 	"sync"
 	"time"
+	"unicode"
+	"unicode/utf8"
 
 	"github.com/jochenvg/go-udev"
 	"github.com/tarm/serial"
@@ -135,15 +137,46 @@ func newModem(c *Conn) (*Modem, error) {
 		return nil, err
 	}
 	m.IMEI = string(i)
-	imsi, err := c.Run("AT+CIMI")
-	if err != nil {
-		return nil, err
+
+	// we make sure we obtain the sim card information.
+	rch := make(chan string)
+	dch := time.After(20 * time.Second)
+	done := make(chan struct{})
+	go func() {
+	END:
+		for {
+			select {
+			case <-done:
+				fmt.Println(" stopping")
+				break END
+			default:
+				imsi, err := c.Run("AT+CIMI")
+				if err != nil {
+					continue
+				}
+				s, err := cleanResult(imsi)
+				if err != nil {
+					continue
+				}
+				if m.IMEI == string(s) {
+					continue
+				}
+				fmt.Println(string(s))
+				rch <- string(s)
+			}
+		}
+	}()
+STOP:
+	for {
+		select {
+		case i := <-rch:
+			m.IMSI = i
+			done <- struct{}{}
+			break STOP
+		case <-dch:
+			break STOP
+		}
 	}
-	s, err := cleanResult(imsi)
-	if err != nil {
-		return nil, err
-	}
-	m.IMSI = string(s)
 	m.conn = c
 	return m, nil
 }
@@ -155,7 +188,7 @@ func (m *Manager) reload() {
 		if err != nil {
 			continue
 		}
-		fmt.Println(modem.IMEI, " ", modem.IMSI)
+		fmt.Println(*modem)
 		m.modems[modem.IMEI] = modem
 	}
 }
@@ -166,6 +199,16 @@ func cleanResult(src []byte) ([]byte, error) {
 		return nil, errors.New("not okay")
 	}
 	ns := bytes.TrimSpace(src[:i])
+	ch, _ := utf8.DecodeRune(ns)
+	if unicode.IsLetter(ch) {
+		at := bytes.Index(ns, []byte("AT"))
+		if at != -1 {
+			i := bytes.IndexRune(ns[at:], '\r')
+			if i > 0 {
+				return bytes.TrimSpace(ns[at+i:]), nil
+			}
+		}
+	}
 	return ns, nil
 }
 
