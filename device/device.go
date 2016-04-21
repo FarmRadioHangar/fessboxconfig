@@ -139,10 +139,11 @@ func newModem(c *Conn) (*Modem, error) {
 	m.IMEI = string(i)
 
 	// we make sure we obtain the sim card information.
-	rch := make(chan string)
-	dch := time.After(20 * time.Second)
-	done := make(chan struct{})
+	var wg sync.WaitGroup
+	done := time.After(20 * time.Second)
+	wg.Add(1)
 	go func() {
+		defer wg.Done()
 	END:
 		for {
 			select {
@@ -162,21 +163,12 @@ func newModem(c *Conn) (*Modem, error) {
 					continue
 				}
 				fmt.Println(string(s))
-				rch <- string(s)
+				m.IMSI = string(s)
+				break END
 			}
 		}
 	}()
-STOP:
-	for {
-		select {
-		case i := <-rch:
-			m.IMSI = i
-			done <- struct{}{}
-			break STOP
-		case <-dch:
-			break STOP
-		}
-	}
+	wg.Wait()
 	m.conn = c
 	return m, nil
 }
