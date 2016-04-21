@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"net/http"
 	"path/filepath"
+	"strings"
 	"sync"
 	"time"
 	"unicode"
@@ -73,11 +74,10 @@ func (m *Manager) Init() {
 				dpath := filepath.Join("/dev", filepath.Base(d.Devpath()))
 				switch d.Action() {
 				case "add":
+					fmt.Println(" add ", dpath)
 					m.AddDevice(dpath)
-					m.reload()
 				case "remove":
 					m.RemoveDevice(dpath)
-					m.reload()
 				}
 			case quit := <-m.stop:
 				m.done <- quit
@@ -85,25 +85,29 @@ func (m *Manager) Init() {
 			}
 		}
 	}()
+
 }
 
 // AddDevice adds device name to the manager
 func (m *Manager) AddDevice(name string) error {
 	cfg := serial.Config{Name: name, Baud: 9600, ReadTimeout: time.Second}
-	m.mu.Lock()
-	m.devices[name] = cfg
-	m.mu.Unlock()
+	conn := &Conn{device: cfg}
+	if strings.Contains(name, "ttyUSB") {
+		fmt.Println("checking modem")
+		modem, err := newModem(conn)
+		if err != nil {
+			return err
+		}
+		m.modems[modem.IMEI] = modem
+		fmt.Println(*modem)
+	}
 	return nil
 }
 
 // List serves the list of current devices. The list wont cover all devices ,
 // only the significant ones( modems for now)
 func (m *Manager) List(w http.ResponseWriter, r *http.Request) {
-	data := make(map[string]interface{})
-	for imei, c := range m.modems {
-		data[imei] = c
-	}
-	json.NewEncoder(w).Encode(data)
+	json.NewEncoder(w).Encode(m.modems)
 	w.Header().Set("Content-Type", "application/json")
 }
 
@@ -113,9 +117,6 @@ func (m *Manager) RunCommand(w http.ResponseWriter, r *http.Request) {
 
 // RemoveDevice removes device name from the manager
 func (m *Manager) RemoveDevice(name string) error {
-	m.mu.RLock()
-	delete(m.devices, name)
-	m.mu.RUnlock()
 	return nil
 }
 
@@ -123,21 +124,38 @@ type Modem struct {
 	IMEI         string `json:"imei"`
 	IMSI         string `json:"imsi"`
 	Manufacturer string `json:"manufacturer"`
+	Path         string `json:"-"`
 	conn         *Conn
 }
 
 func newModem(c *Conn) (*Modem, error) {
 	m := &Modem{}
-	imei, err := c.Run(modemCommands.IMEI)
-	if err != nil {
-		return nil, err
+	ich := time.After(10 * time.Second)
+STOP:
+	for {
+		select {
+		case <-ich:
+			break STOP
+		default:
+			imei, err := c.Run(modemCommands.IMEI)
+			if err != nil {
+				continue
+			}
+			i, err := cleanResult(imei)
+			if err != nil {
+				continue
+			}
+			im := string(i)
+			if !isNumber(im) {
+				continue
+			}
+			m.IMEI = im
+			break STOP
+		}
 	}
-	i, err := cleanResult(imei)
-	if err != nil {
-		return nil, err
+	if m.IMEI == "" {
+		return nil, errors.New("no imei")
 	}
-	m.IMEI = string(i)
-
 	// we make sure we obtain the sim card information.
 	var wg sync.WaitGroup
 	done := time.After(20 * time.Second)
@@ -148,6 +166,7 @@ func newModem(c *Conn) (*Modem, error) {
 		for {
 			select {
 			case <-done:
+				fmt.Println("Timed out")
 				break END
 			default:
 				imsi, err := c.Run("AT+CIMI")
@@ -158,18 +177,35 @@ func newModem(c *Conn) (*Modem, error) {
 				if err != nil {
 					continue
 				}
-				if m.IMEI == string(s) {
+				ss := string(s)
+				if !isNumber(ss) {
+					continue
+				}
+				if m.IMEI == ss {
 					continue
 				}
 				fmt.Println(string(s))
-				m.IMSI = string(s)
+				m.IMSI = ss
 				break END
 			}
 		}
 	}()
 	wg.Wait()
+	if m.IMSI == "" {
+		return nil, errors.New(" can't find IMSI")
+	}
 	m.conn = c
+	m.Path = c.device.Name
 	return m, nil
+}
+
+func isNumber(src string) bool {
+	for _, v := range src {
+		if !unicode.IsDigit(v) {
+			return false
+		}
+	}
+	return true
 }
 
 func (m *Manager) reload() {
