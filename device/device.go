@@ -148,7 +148,6 @@ func newModem(c *Conn) (*Modem, error) {
 		for {
 			select {
 			case <-done:
-				fmt.Println(" stopping")
 				break END
 			default:
 				imsi, err := c.Run("AT+CIMI")
