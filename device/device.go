@@ -76,6 +76,7 @@ func (m *Manager) Init() {
 				case "add":
 					fmt.Println(" add ", dpath)
 					m.AddDevice(dpath)
+					fmt.Println(" done adding ", dpath)
 				case "remove":
 					m.RemoveDevice(dpath)
 				}
