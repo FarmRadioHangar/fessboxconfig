@@ -75,7 +75,7 @@ func (m *Manager) Init() {
 				switch d.Action() {
 				case "add":
 					fmt.Println(" add ", dpath)
-					m.AddDevice(dpath)
+					m.AddDevice(d)
 					fmt.Println(" done adding ", dpath)
 				case "remove":
 					m.RemoveDevice(dpath)
@@ -90,7 +90,8 @@ func (m *Manager) Init() {
 }
 
 // AddDevice adds device name to the manager
-func (m *Manager) AddDevice(name string) error {
+func (m *Manager) AddDevice(d *udev.Device) error {
+	name := filepath.Join("/dev", filepath.Base(d.Devpath()))
 	cfg := serial.Config{Name: name, Baud: 9600, ReadTimeout: time.Second}
 	conn := &Conn{device: cfg}
 	if strings.Contains(name, "ttyUSB") {
