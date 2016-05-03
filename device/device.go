@@ -92,7 +92,7 @@ func (m *Manager) Init() {
 // AddDevice adds device name to the manager
 func (m *Manager) AddDevice(d *udev.Device) error {
 	name := filepath.Join("/dev", filepath.Base(d.Devpath()))
-	cfg := serial.Config{Name: name, Baud: 9600, ReadTimeout: time.Second}
+	cfg := serial.Config{Name: name, Baud: 9600, ReadTimeout: 10 * time.Second}
 	conn := &Conn{device: cfg}
 	if strings.Contains(name, "ttyUSB") {
 		fmt.Println("checking modem")
