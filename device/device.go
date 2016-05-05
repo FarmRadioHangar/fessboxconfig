@@ -108,7 +108,7 @@ func (m *Manager) AddDevice(d *udev.Device) error {
 			return err
 		}
 		fmt.Println(*modem)
-		if mm, ok := m.modems[modem.IMEI]; ok {
+		if mm, ok := m.getModem(modem.IMEI); ok {
 			n1, err := getttyNum(mm.Path)
 			if err != nil {
 				return err
@@ -118,13 +118,26 @@ func (m *Manager) AddDevice(d *udev.Device) error {
 				return err
 			}
 			if n1 < n2 {
-				m.modems[modem.IMEI] = modem
+				m.setModem(modem)
 			}
 			return nil
 		}
-		m.modems[modem.IMEI] = modem
+		m.setModem(modem)
 	}
 	return nil
+}
+
+func (m *Manager) setModem(mod *Modem) {
+	m.mu.Lock()
+	m.modems[mod.IMEI] = mod
+	m.mu.Unlock()
+}
+
+func (m *Manager) getModem(imei string) (*Modem, bool) {
+	m.mu.RLock()
+	mod, ok := m.modems[imei]
+	m.mu.RUnlock()
+	return mod, ok
 }
 
 func getttyNum(tty string) (int, error) {
@@ -136,7 +149,9 @@ func getttyNum(tty string) (int, error) {
 // List serves the list of current devices. The list wont cover all devices ,
 // only the significant ones( modems for now)
 func (m *Manager) List(w http.ResponseWriter, r *http.Request) {
+	m.mu.RLock()
 	json.NewEncoder(w).Encode(m.modems)
+	m.mu.RUnlock()
 	w.Header().Set("Content-Type", "application/json")
 }
 
