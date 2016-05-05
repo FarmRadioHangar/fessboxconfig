@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"net/http"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -90,6 +91,12 @@ func (m *Manager) Init() {
 }
 
 // AddDevice adds device name to the manager
+//
+// WARNING: The way modems are picked is a hack. It asserts that the modem with
+// the lowest tty number is the control modem( Which I'm not so sure is always
+// correct).
+//
+// TODO: comeup with a proper way to identify modems
 func (m *Manager) AddDevice(d *udev.Device) error {
 	name := filepath.Join("/dev", filepath.Base(d.Devpath()))
 	cfg := serial.Config{Name: name, Baud: 9600, ReadTimeout: 10 * time.Second}
@@ -100,10 +107,30 @@ func (m *Manager) AddDevice(d *udev.Device) error {
 		if err != nil {
 			return err
 		}
-		m.modems[modem.IMEI] = modem
 		fmt.Println(*modem)
+		if mm, ok := m.modems[modem.IMEI]; ok {
+			n1, err := getttyNum(mm.Path)
+			if err != nil {
+				return err
+			}
+			n2, err := getttyNum(modem.Path)
+			if err != nil {
+				return err
+			}
+			if n1 < n2 {
+				m.modems[modem.IMEI] = modem
+			}
+			return nil
+		}
+		m.modems[modem.IMEI] = modem
 	}
 	return nil
+}
+
+func getttyNum(tty string) (int, error) {
+	b := filepath.Base(tty)
+	b = strings.TrimPrefix(b, "USB")
+	return strconv.Atoi(b)
 }
 
 // List serves the list of current devices. The list wont cover all devices ,
@@ -126,7 +153,7 @@ type Modem struct {
 	IMEI         string `json:"imei"`
 	IMSI         string `json:"imsi"`
 	Manufacturer string `json:"manufacturer"`
-	Path         string `json:"-"`
+	Path         string `json:"tty"`
 	conn         *Conn
 }
 
