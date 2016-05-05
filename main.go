@@ -27,6 +27,7 @@ type Config struct {
 	StaticDir      string `json:"static_dir"`
 	TemplatesDir   string `json:"templates_dir"`
 	AsteriskConfig string `json:"asterisk_config_dir"`
+	Autodetect     bool   `json:"autodetect"`
 }
 
 func defaultConfig() *Config {
@@ -36,6 +37,7 @@ func defaultConfig() *Config {
 		StaticDir:      "static",
 		TemplatesDir:   "templates",
 		AsteriskConfig: "/etc/asterisk",
+		Autodetect:     true,
 	}
 }
 
@@ -52,8 +54,11 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	manager := device.New()
-	manager.Init()
+	var manager *device.Manager
+	if cfg.Autodetect {
+		manager := device.New()
+		manager.Init()
+	}
 	if *dev {
 		cfg.AsteriskConfig = "sample"
 		tmp, err := ioutil.TempDir("", "fconf")
@@ -69,7 +74,9 @@ func main() {
 				case <-c:
 					log.Println("removing ", dir)
 					_ = os.RemoveAll(dir)
-					manager.Close()
+					if cfg.Autodetect {
+						manager.Close()
+					}
 					break END
 				}
 			}
