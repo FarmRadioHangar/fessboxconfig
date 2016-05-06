@@ -56,7 +56,7 @@ func main() {
 	}
 	var manager *device.Manager
 	if cfg.Autodetect {
-		manager := device.New()
+		manager = device.New()
 		manager.Init()
 	}
 	if *dev {
