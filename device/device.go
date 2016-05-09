@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -117,11 +118,13 @@ func (m *Manager) AddDevice(d *udev.Device) error {
 			if err != nil {
 				return err
 			}
-			if n1 < n2 {
+			if n1 <= n2 {
+				modem.Symlink()
 				m.setModem(modem)
 			}
 			return nil
 		}
+		modem.Symlink()
 		m.setModem(modem)
 	}
 	return nil
@@ -170,6 +173,12 @@ type Modem struct {
 	Manufacturer string `json:"manufacturer"`
 	Path         string `json:"tty"`
 	conn         *Conn
+}
+
+// Symlink adds symlink to the  modem. The symlink links the tty to the IMEI
+// number of the modem.
+func (m *Modem) Symlink() error {
+	return os.Symlink(m.Path, fmt.Sprintf("/dev/%s", m.IMEI))
 }
 
 func newModem(c *Conn) (*Modem, error) {
