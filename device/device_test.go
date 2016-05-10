@@ -7,8 +7,8 @@ func TestGetTtyNumber(t *testing.T) {
 		src string
 		num int
 	}{
-		{"/dev/USB0", 0},
-		{"/dev/USB1", 1},
+		{"/dev/ttyUSB0", 0},
+		{"/dev/ttyUSB1", 1},
 	}
 	for _, v := range sample {
 		n, err := getttyNum(v.src)

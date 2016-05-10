@@ -99,6 +99,13 @@ func (m *Manager) Init() {
 //
 // TODO: comeup with a proper way to identify modems
 func (m *Manager) AddDevice(d *udev.Device) error {
+	err := m.addDevice(d)
+	if err != nil {
+		return err
+	}
+	return m.Symlink()
+}
+func (m *Manager) addDevice(d *udev.Device) error {
 	name := filepath.Join("/dev", filepath.Base(d.Devpath()))
 	cfg := serial.Config{Name: name, Baud: 9600, ReadTimeout: 10 * time.Second}
 	conn := &Conn{device: cfg}
@@ -108,7 +115,6 @@ func (m *Manager) AddDevice(d *udev.Device) error {
 		if err != nil {
 			return err
 		}
-		fmt.Println(*modem)
 		if mm, ok := m.getModem(modem.IMEI); ok {
 			n1, err := getttyNum(mm.Path)
 			if err != nil {
@@ -118,14 +124,22 @@ func (m *Manager) AddDevice(d *udev.Device) error {
 			if err != nil {
 				return err
 			}
-			if n1 <= n2 {
-				modem.Symlink()
+			if n1 > n2 {
 				m.setModem(modem)
 			}
 			return nil
 		}
-		modem.Symlink()
 		m.setModem(modem)
+	}
+	return nil
+}
+
+func (m *Manager) Symlink() error {
+	for _, v := range m.modems {
+		err := v.Symlink()
+		if err != nil {
+			return err
+		}
 	}
 	return nil
 }
@@ -145,7 +159,7 @@ func (m *Manager) getModem(imei string) (*Modem, bool) {
 
 func getttyNum(tty string) (int, error) {
 	b := filepath.Base(tty)
-	b = strings.TrimPrefix(b, "USB")
+	b = strings.TrimPrefix(b, "ttyUSB")
 	return strconv.Atoi(b)
 }
 
