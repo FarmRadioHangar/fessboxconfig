@@ -138,7 +138,8 @@ func (m *Manager) Symlink() error {
 	for _, v := range m.modems {
 		err := v.Symlink()
 		if err != nil {
-			return err
+			fmt.Printf(" ERROR %v\n", err)
+			continue
 		}
 	}
 	return nil
