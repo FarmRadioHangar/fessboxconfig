@@ -11,6 +11,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"syscall"
 	"time"
 	"unicode"
 	"unicode/utf8"
@@ -193,7 +194,12 @@ type Modem struct {
 // Symlink adds symlink to the  modem. The symlink links the tty to the IMEI
 // number of the modem.
 func (m *Modem) Symlink() error {
-	return os.Symlink(m.Path, fmt.Sprintf("/dev/%s", m.IMEI))
+	newLink := (fmt.Sprintf("/dev/%s", m.IMEI))
+	err := syscall.Unlink(newLink)
+	if err != nil {
+		fmt.Printf(" ERROR %v \n", err)
+	}
+	return os.Symlink(m.Path, newLink)
 }
 
 func newModem(c *Conn) (*Modem, error) {
