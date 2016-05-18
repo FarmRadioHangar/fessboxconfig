@@ -26,6 +26,11 @@ var modemCommands = struct {
 	"AT+GSN", "AT+CIMI",
 }
 
+type message struct {
+	Type string                 `json:"type"`
+	Data map[string]interface{} `json:"data"`
+}
+
 // Manager manages devices that are plugged into the system. It supports auto
 // detection of devices.
 //
