@@ -324,6 +324,11 @@ func (m *Manager) Close() {
 	m.stop <- struct{}{}
 }
 
+// Updates is websocket http handler for sending updates about the devices
+// plugged into the system in real time.
+func (m *Manager) Updates(w http.ResponseWriter, r *http.Request) {
+}
+
 // Conn is a device serial connection
 type Conn struct {
 	device serial.Config
