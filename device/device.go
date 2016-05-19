@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -16,6 +17,7 @@ import (
 	"unicode"
 	"unicode/utf8"
 
+	"github.com/gorilla/websocket"
 	"github.com/jochenvg/go-udev"
 	"github.com/tarm/serial"
 )
@@ -25,6 +27,7 @@ var modemCommands = struct {
 }{
 	"AT+GSN", "AT+CIMI",
 }
+var upgrader = websocket.Upgrader{}
 
 type message struct {
 	Type string                 `json:"type"`
@@ -48,6 +51,7 @@ type Manager struct {
 	monitor *udev.Monitor
 	done    chan struct{}
 	stop    chan struct{}
+	events  chan struct{}
 }
 
 // New returns a new Manager instance
@@ -324,9 +328,35 @@ func (m *Manager) Close() {
 	m.stop <- struct{}{}
 }
 
+func reader(ws *websocket.Conn) {
+	defer ws.Close()
+	for {
+		_, _, err := ws.ReadMessage()
+		if err != nil {
+			log.Println(err)
+		}
+	}
+}
+
 // Updates is websocket http handler for sending updates about the devices
 // plugged into the system in real time.
 func (m *Manager) Updates(w http.ResponseWriter, r *http.Request) {
+	ws, err := upgrader.Upgrade(w, r, nil)
+	if err != nil {
+		if _, ok := err.(websocket.HandshakeError); !ok {
+			log.Println(err)
+		}
+		return
+	}
+	go func() {
+		for {
+			select {
+			case ev := <-m.events:
+				_ = ws.WriteJSON(ev)
+			}
+		}
+	}()
+	reader(ws)
 }
 
 // Conn is a device serial connection
