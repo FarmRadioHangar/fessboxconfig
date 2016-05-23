@@ -51,7 +51,7 @@ type Manager struct {
 	monitor *udev.Monitor
 	done    chan struct{}
 	stop    chan struct{}
-	events  chan struct{}
+	events  chan *message
 }
 
 // New returns a new Manager instance
@@ -61,6 +61,7 @@ func New() *Manager {
 		modems:  make(map[string]*Modem),
 		done:    make(chan struct{}),
 		stop:    make(chan struct{}),
+		events:  make(chan *message),
 	}
 }
 
@@ -125,6 +126,10 @@ func (m *Manager) addDevice(d *udev.Device) error {
 		if err != nil {
 			return err
 		}
+		msg := &message{Type: "add_dongle", Data: make(map[string]interface{})}
+		msg.Data["imei"] = modem.IMEI
+		msg.Data["imsi"] = modem.IMSI
+		m.events <- msg
 		if mm, ok := m.getModem(modem.IMEI); ok {
 			n1, err := getttyNum(mm.Path)
 			if err != nil {
