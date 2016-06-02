@@ -1,7 +1,6 @@
 build:
-  image: golang:1.6.2-wheezy
+  image: gernest/go
   commands:
-    - apt-get-update
-    - apt-get install -y libudev-dev
+    - rm -rf vendor
     - go get
     - make
