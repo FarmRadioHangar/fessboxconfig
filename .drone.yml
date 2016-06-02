@@ -1,5 +1,7 @@
 build:
   image: gernest/go
+  environment:
+    - PATH=$PATH:/usr/bin/gcc
   commands:
     - rm -rf vendor
     - echo $PATH
