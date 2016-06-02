@@ -2,5 +2,6 @@ build:
   image: gernest/go
   commands:
     - rm -rf vendor
+    - echo $PATH
     - go get
     - make
