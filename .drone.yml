@@ -1,8 +1,13 @@
+workspace:
+  base: /drone
+  path: src/github.com/FarmRadioHangar/fessboxconfig
 build:
   image: gernest/go
   environment:
+    - GOPATH=/drone
   commands:
     - rm -rf vendor
+    - export PATH=/usr/bin/gcc:$PATH
     - gcc -v
     - go get
     - make
