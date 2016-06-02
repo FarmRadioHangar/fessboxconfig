@@ -1,6 +1,6 @@
 build:
-  image: golang
+  image: golang:1.6.2
   commands:
-    - setup-xorg-base
+    - sudo apt-get install libudev-dev
     - go get
     - make
