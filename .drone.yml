@@ -3,6 +3,7 @@ workspace:
   path: src/github.com/FarmRadioHangar/fessboxconfig
 build:
   image: gernest/go
+  pull: true
   environment:
     - GOPATH=/drone
   commands:
