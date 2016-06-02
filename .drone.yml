@@ -1,6 +1,6 @@
 build:
-  image: golang:1.6.2
+  image: golang:1.6.2-wheezy
   commands:
-    - sudo apt-get install libudev-dev
+    - apt-get install libudev-dev
     - go get
     - make
