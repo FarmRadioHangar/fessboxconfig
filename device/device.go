@@ -91,6 +91,7 @@ func (m *Manager) Init() {
 					m.AddDevice(d)
 					fmt.Println(" done adding ", dpath)
 				case "remove":
+					fmt.Println(" removed device " + dpath)
 					m.RemoveDevice(dpath)
 				}
 			case quit := <-m.stop:
@@ -126,10 +127,7 @@ func (m *Manager) addDevice(d *udev.Device) error {
 		if err != nil {
 			return err
 		}
-		msg := &message{Type: "add_dongle", Data: make(map[string]interface{})}
-		msg.Data["imei"] = modem.IMEI
-		msg.Data["imsi"] = modem.IMSI
-		m.events <- msg
+		fmt.Println("found ", *modem)
 		if mm, ok := m.getModem(modem.IMEI); ok {
 			n1, err := getttyNum(mm.Path)
 			if err != nil {
@@ -150,6 +148,7 @@ func (m *Manager) addDevice(d *udev.Device) error {
 }
 
 func (m *Manager) Symlink() error {
+	fmt.Println("SYMLINKING")
 	for _, v := range m.modems {
 		err := v.Symlink()
 		if err != nil {
@@ -161,6 +160,7 @@ func (m *Manager) Symlink() error {
 }
 
 func (m *Manager) setModem(mod *Modem) {
+	fmt.Println("SETTING UP " + mod.IMEI)
 	m.mu.Lock()
 	m.modems[mod.IMEI] = mod
 	m.mu.Unlock()
