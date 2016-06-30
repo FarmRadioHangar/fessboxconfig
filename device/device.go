@@ -29,7 +29,7 @@ var modemCommands = struct {
 }
 var upgrader = websocket.Upgrader{}
 
-type message struct {
+type Message struct {
 	Type string                 `json:"type"`
 	Data map[string]interface{} `json:"data"`
 }
@@ -51,7 +51,7 @@ type Manager struct {
 	monitor *udev.Monitor
 	done    chan struct{}
 	stop    chan struct{}
-	events  chan *message
+	events  chan *Message
 }
 
 // New returns a new Manager instance
@@ -61,7 +61,7 @@ func New() *Manager {
 		modems:  make(map[string]*Modem),
 		done:    make(chan struct{}),
 		stop:    make(chan struct{}),
-		events:  make(chan *message),
+		events:  make(chan *Message),
 	}
 }
 
