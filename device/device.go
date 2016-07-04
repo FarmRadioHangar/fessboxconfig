@@ -93,6 +93,8 @@ func (m *Manager) Init() {
 					fmt.Println(" done adding ", dpath)
 				case "remove":
 					fmt.Println(" removed device " + dpath)
+
+					//TODO remove symlinks after the modem is remoed
 					m.RemoveDevice(dpath)
 				}
 			case quit := <-m.stop:
