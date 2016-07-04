@@ -221,13 +221,26 @@ type Modem struct {
 
 // Symlink adds symlink to the  modem. The symlink links the tty to the IMEI
 // number of the modem.
+//
+// Two symlinks are created one for IMEI the other is for IMSI
+//  /dev/ttyUSB -> {IMEI}.imei
+//  /dev/ttyUSB -> {IMSI}.imsi
 func (m *Modem) Symlink() error {
-	newLink := (fmt.Sprintf("/dev/%s", m.IMEI))
-	err := syscall.Unlink(newLink)
+	newIMEILink := (fmt.Sprintf("/dev/%s", m.IMEI+".imei"))
+	err := syscall.Unlink(newIMEILink)
 	if err != nil {
 		fmt.Printf(" ERROR %v \n", err)
 	}
-	return os.Symlink(m.Path, newLink)
+	err = os.Symlink(m.Path, newIMEILink)
+	if err != nil {
+		fmt.Printf(" ERROR %v \n", err)
+	}
+	newIMSILink := (fmt.Sprintf("/dev/%s", m.IMSI+".imsi"))
+	err = syscall.Unlink(newIMSILink)
+	if err != nil {
+		fmt.Printf(" ERROR %v \n", err)
+	}
+	return os.Symlink(m.Path, newIMSILink)
 }
 
 func newModem(c *Conn) (*Modem, error) {
