@@ -71,6 +71,7 @@ func New() *Manager {
 // The only interesting device actions are add and reomove for adding and
 // removing devices respctively.
 func (m *Manager) Init() {
+	m.startup()
 	u := udev.Udev{}
 	monitor := u.NewMonitorFromNetlink("udev")
 	monitor.FilterAddMatchTag("systemd")
@@ -101,6 +102,18 @@ func (m *Manager) Init() {
 		}
 	}()
 
+}
+
+func (m *Manager) startup() {
+	u := udev.Udev{}
+	e := u.NewEnumerate()
+	e.AddMatchIsInitialized()
+	e.AddMatchTag("systemd")
+	devices, _ := e.Devices()
+	for i := 0; i < len(devices); i++ {
+		device := devices[i]
+		m.AddDevice(device)
+	}
 }
 
 // AddDevice adds device name to the manager
@@ -155,6 +168,7 @@ func (m *Manager) Symlink() error {
 			fmt.Printf(" ERROR %v\n", err)
 			continue
 		}
+		fmt.Println("SYMLINKING SUCCESS " + v.IMEI)
 	}
 	return nil
 }
