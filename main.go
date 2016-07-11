@@ -166,12 +166,12 @@ func newWeb(cfg *Config) *web {
 
 //Home serves the home page
 func (ww *web) Home(w http.ResponseWriter, r *http.Request) {
-	data := make(map[string]interface{})
-	data["Config"] = ww.cfg
-	err := ww.tpl.Execute(w, "index.html", data)
-	if err != nil {
-		log.Println(err)
-	}
+	//data := make(map[string]interface{})
+	//data["Config"] = ww.cfg
+	//err := ww.tpl.Execute(w, "index.html", data)
+	//if err != nil {
+	//log.Println(err)
+	//}
 }
 
 type errMSG struct {
