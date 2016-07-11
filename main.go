@@ -42,7 +42,7 @@ func defaultConfig() *Config {
 }
 
 func main() {
-	c := flag.String("c", "conf/config.json", "path to the configuration file")
+	c := flag.String("c", "etc/fconf.json", "path to the configuration file")
 	dev := flag.Bool("dev", false, "set true if running in dev mode")
 	flag.Parse()
 	b, err := ioutil.ReadFile(*c)
