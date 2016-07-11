@@ -1,0 +1,16 @@
+[Unit]
+Description=Fessbox Configurator
+#After=network.target
+After=asterisk.service
+
+[Service]
+Type=simple
+WorkingDirectory=/home/gosrc/src/github.com/FarmRadioHangar/fessboxconfig
+ExecStartPre=/usr/bin/sh -c "/usr/bin/rm -f /dev/*.im?i"
+ExecStart=/home/gosrc/src/github.com/FarmRadioHangar/fessboxconfig/fconf
+Restart=on-failure
+RestartSec=30
+
+[Install]
+WantedBy=multi-user.target
+

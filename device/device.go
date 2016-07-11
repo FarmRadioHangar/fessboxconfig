@@ -29,7 +29,7 @@ var modemCommands = struct {
 }
 var upgrader = websocket.Upgrader{}
 
-type message struct {
+type Message struct {
 	Type string                 `json:"type"`
 	Data map[string]interface{} `json:"data"`
 }
@@ -51,7 +51,7 @@ type Manager struct {
 	monitor *udev.Monitor
 	done    chan struct{}
 	stop    chan struct{}
-	events  chan *message
+	events  chan *Message
 }
 
 // New returns a new Manager instance
@@ -61,7 +61,7 @@ func New() *Manager {
 		modems:  make(map[string]*Modem),
 		done:    make(chan struct{}),
 		stop:    make(chan struct{}),
-		events:  make(chan *message),
+		events:  make(chan *Message),
 	}
 }
 
@@ -71,6 +71,7 @@ func New() *Manager {
 // The only interesting device actions are add and reomove for adding and
 // removing devices respctively.
 func (m *Manager) Init() {
+	m.startup()
 	u := udev.Udev{}
 	monitor := u.NewMonitorFromNetlink("udev")
 	monitor.FilterAddMatchTag("systemd")
@@ -91,6 +92,9 @@ func (m *Manager) Init() {
 					m.AddDevice(d)
 					fmt.Println(" done adding ", dpath)
 				case "remove":
+					fmt.Println(" removed device " + dpath)
+
+					//TODO remove symlinks after the modem is remoed
 					m.RemoveDevice(dpath)
 				}
 			case quit := <-m.stop:
@@ -100,6 +104,18 @@ func (m *Manager) Init() {
 		}
 	}()
 
+}
+
+func (m *Manager) startup() {
+	u := udev.Udev{}
+	e := u.NewEnumerate()
+	e.AddMatchIsInitialized()
+	e.AddMatchTag("systemd")
+	devices, _ := e.Devices()
+	for i := 0; i < len(devices); i++ {
+		device := devices[i]
+		m.AddDevice(device)
+	}
 }
 
 // AddDevice adds device name to the manager
@@ -126,10 +142,7 @@ func (m *Manager) addDevice(d *udev.Device) error {
 		if err != nil {
 			return err
 		}
-		msg := &message{Type: "add_dongle", Data: make(map[string]interface{})}
-		msg.Data["imei"] = modem.IMEI
-		msg.Data["imsi"] = modem.IMSI
-		m.events <- msg
+		fmt.Println("found ", *modem)
 		if mm, ok := m.getModem(modem.IMEI); ok {
 			n1, err := getttyNum(mm.Path)
 			if err != nil {
@@ -150,17 +163,20 @@ func (m *Manager) addDevice(d *udev.Device) error {
 }
 
 func (m *Manager) Symlink() error {
+	fmt.Println("SYMLINKING")
 	for _, v := range m.modems {
 		err := v.Symlink()
 		if err != nil {
 			fmt.Printf(" ERROR %v\n", err)
 			continue
 		}
+		fmt.Println("SYMLINKING SUCCESS " + v.IMEI)
 	}
 	return nil
 }
 
 func (m *Manager) setModem(mod *Modem) {
+	fmt.Println("SETTING UP " + mod.IMEI)
 	m.mu.Lock()
 	m.modems[mod.IMEI] = mod
 	m.mu.Unlock()
@@ -207,13 +223,26 @@ type Modem struct {
 
 // Symlink adds symlink to the  modem. The symlink links the tty to the IMEI
 // number of the modem.
+//
+// Two symlinks are created one for IMEI the other is for IMSI
+//  /dev/ttyUSB -> {IMEI}.imei
+//  /dev/ttyUSB -> {IMSI}.imsi
 func (m *Modem) Symlink() error {
-	newLink := (fmt.Sprintf("/dev/%s", m.IMEI))
-	err := syscall.Unlink(newLink)
+	newIMEILink := (fmt.Sprintf("/dev/%s", m.IMEI+".imei"))
+	err := syscall.Unlink(newIMEILink)
 	if err != nil {
 		fmt.Printf(" ERROR %v \n", err)
 	}
-	return os.Symlink(m.Path, newLink)
+	err = os.Symlink(m.Path, newIMEILink)
+	if err != nil {
+		fmt.Printf(" ERROR %v \n", err)
+	}
+	newIMSILink := (fmt.Sprintf("/dev/%s", m.IMSI+".imsi"))
+	err = syscall.Unlink(newIMSILink)
+	if err != nil {
+		fmt.Printf(" ERROR %v \n", err)
+	}
+	return os.Symlink(m.Path, newIMSILink)
 }
 
 func newModem(c *Conn) (*Modem, error) {
