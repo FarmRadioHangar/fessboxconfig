@@ -1,8 +1,0 @@
-{
-	"port": 8080,
-	"host": "",
-	"static_dir": "static",
-	"templates_dir": "templates",
-	"asterisk_config_dir": "/etc/asterisk",
-  "autodetect": true
-}
