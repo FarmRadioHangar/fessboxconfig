@@ -77,6 +77,7 @@ func main() {
 					if cfg.Autodetect {
 						manager.Close()
 					}
+					os.Exit(0)
 					break END
 				}
 			}
@@ -146,22 +147,7 @@ type web struct {
 //newWeb intialises and returns a new instance of *web, the templates are loaded
 //and if dev mode is set to true then auto reload is enabled.
 func newWeb(cfg *Config) *web {
-	w := &web{cfg: cfg}
-	config := &hot.Config{
-		Watch:          true,
-		BaseName:       "fconf",
-		Dir:            cfg.TemplatesDir,
-		LeftDelim:      "{%",
-		RightDelim:     "%}",
-		FilesExtension: []string{".tpl", ".html", ".tmpl"},
-	}
-
-	tpl, err := hot.New(config)
-	if err != nil {
-		panic(err)
-	}
-	w.tpl = tpl
-	return w
+	return &web{cfg: cfg}
 }
 
 //Home serves the home page
