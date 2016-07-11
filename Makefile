@@ -8,5 +8,3 @@ start:build
 dev:build
 	./fconf -dev true
 
-dep:
-	go build --ldflags '-extldflags "-static"' -o fconf
