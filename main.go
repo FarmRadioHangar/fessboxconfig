@@ -123,8 +123,8 @@ func newServer(c *Config) *mux.Router {
 	w := newWeb(c)
 	s.HandleFunc("/config/{filename}", w.Dongle).Methods("GET")
 	s.HandleFunc("/config/{filename}", w.UpdateDongle).Methods("POST")
-	s.PathPrefix("/static/").
-		Handler(http.StripPrefix("/static/", http.FileServer(http.Dir(c.StaticDir))))
+	//s.PathPrefix("/static/").
+	//Handler(http.StripPrefix("/static/", http.FileServer(http.Dir(c.StaticDir))))
 	s.HandleFunc("/", w.Home)
 	return s
 }
