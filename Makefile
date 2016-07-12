@@ -21,3 +21,5 @@ uninstall:
 	systemctl disable fconf
 	rm -f /lib/systemd/system/fconf.service
 
+install:prepare
+	./scripts/install.sh
