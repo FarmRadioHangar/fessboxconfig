@@ -13,4 +13,4 @@ $ cd $GOPATH/github.com/FarmRadioHangar/fessboxconfig
 $ make
 
 $ make install
-``
+```
