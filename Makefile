@@ -14,3 +14,10 @@ prepare:build
 	cp -i -u ./etc/fconf.json $(CONFIG_DIR)/fconf.json
 	cp -i -u ./fconf $(BIN_DIR)/fconf
 
+uninstall:
+	which systemctl||true
+	rm -r $(CONFIG_DIR)
+	rm -f $(BN_DIR)/fconf
+	systemctl disable fconf
+	rm -f /lib/systemd/system/fconf.service
+
