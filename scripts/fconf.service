@@ -5,12 +5,13 @@ After=asterisk.service
 
 [Service]
 Type=simple
-WorkingDirectory=/home/gosrc/src/github.com/FarmRadioHangar/fessboxconfig
-ExecStartPre=/usr/bin/sh -c "/usr/bin/rm -f /dev/*.im?i"
-ExecStart=/home/gosrc/src/github.com/FarmRadioHangar/fessboxconfig/fconf
+User=fconf
+ExecStart=/usr/bin/fconf -c /etc/fconf/fconf.json
+ExecReload=/bin/kill -HUP $MAINPID
 Restart=on-failure
 RestartSec=30
 
 [Install]
 WantedBy=multi-user.target
+Alias=fconf.service
 
