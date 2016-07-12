@@ -17,7 +17,7 @@ prepare:build
 uninstall:
 	which systemctl||true
 	rm -r $(CONFIG_DIR)
-	rm -f $(BN_DIR)/fconf
+	rm -f $(BIN_DIR)/fconf
 	systemctl disable fconf
 	rm -f /lib/systemd/system/fconf.service
 
