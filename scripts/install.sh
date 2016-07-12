@@ -11,11 +11,6 @@ function install_systemd {
 
 
 
-id fconf &>/dev/null
-if [[ $? -ne 0 ]]; then
-    useradd -r -K USERGROUPS_ENAB=yes -M fconf -s /bin/false -d /etc/fconf
-fi
-
 
 if [[ -f /etc/os-release ]]; then
     which systemctl &>/dev/null
