@@ -9,7 +9,7 @@ start:build
 dev:build
 	./fconf -dev true
 
-prepare:build
+prepare:fconf
 	mkdir -p $(CONFIG_DIR)
 	cp -i ./etc/fconf.json $(CONFIG_DIR)/fconf.json
 	cp -i ./fconf $(BIN_DIR)/fconf
