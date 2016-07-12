@@ -1,9 +1,16 @@
 # fessboxconfig
 Configuration manager for fessbox
 
-
-If you just want to test in dev mode( No asterisk installation is required)
+# Installing from source
+You need a working Go environment
 
 ```bash
-make dev
-```
+
+$ go get github.com/FarmRadioHangar/fessboxconfig/...
+
+$ cd $GOPATH/github.com/FarmRadioHangar/fessboxconfig
+
+$ make
+
+$ make install
+``
