@@ -11,8 +11,8 @@ dev:build
 
 prepare:build
 	mkdir -p $(CONFIG_DIR)
-	cp -i  ./etc/fconf.json $(CONFIG_DIR)/fconf.json
-	cp -i  ./fconf $(BIN_DIR)/fconf
+	cp -i ./etc/fconf.json $(CONFIG_DIR)/fconf.json
+	cp -i ./fconf $(BIN_DIR)/fconf
 
 uninstall:
 	which systemctl||true
