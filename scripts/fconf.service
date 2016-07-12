@@ -6,6 +6,7 @@ After=asterisk.service
 [Service]
 Type=simple
 User=fconf
+ExecStartPre=/usr/bin/sh -c "/usr/bin/rm -f /dev/*.im?i"
 ExecStart=/usr/bin/fconf -c /etc/fconf/fconf.json
 ExecReload=/bin/kill -HUP $MAINPID
 Restart=on-failure
